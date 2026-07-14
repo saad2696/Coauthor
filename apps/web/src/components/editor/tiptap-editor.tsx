@@ -4,7 +4,7 @@ import type { TiptapDoc } from "@coauthor/shared";
 import { EditorContent, type JSONContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { Toolbar } from "./toolbar";
 
@@ -38,6 +38,17 @@ export function TiptapEditor({
       onChange?.(editor.getJSON() as TiptapDoc);
     },
   });
+
+  // Deterministically load content once the editor instance is ready. The
+  // `content` option only applies at creation and can race with the client-only
+  // mount, which occasionally left the editor blank; setting it on ready fixes
+  // that. `false` = don't emit an update (so this doesn't trigger autosave).
+  const initialRef = useRef(initialContent);
+  useEffect(() => {
+    if (editor) {
+      editor.commands.setContent(initialRef.current as JSONContent, false);
+    }
+  }, [editor]);
 
   // Keep editability in sync if the resolved access changes.
   useEffect(() => {

@@ -1,15 +1,16 @@
 "use client";
 
 import type { TiptapDoc } from "@coauthor/shared";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
-import { api, ApiError } from "@/lib/api";
-import { useAutosave } from "@/lib/use-autosave";
+import { api, ApiError, type Doc, type DocumentsList } from "@/lib/api";
+import { useAutosave, type SaveState } from "@/lib/use-autosave";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ShareDialog } from "@/components/editor/share-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditorPage() {
   const params = useParams<{ id: string }>();
@@ -21,9 +22,8 @@ export default function EditorPage() {
     retry: false,
   });
 
-  if (isLoading) {
-    return <CenterMessage text="Loading document…" />;
-  }
+  if (isLoading) return <EditorSkeleton />;
+
   if (error) {
     const notFound = error instanceof ApiError && error.status === 404;
     return (
@@ -69,32 +69,63 @@ function DocumentEditor({
   isOwner: boolean;
   isViewer: boolean;
 }) {
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState(initialTitle);
-  const [titleError, setTitleError] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const saveContent = useCallback(
-    (content: TiptapDoc) => api.updateDocument(docId, { content }),
-    [docId],
-  );
-  const { state, schedule, retry } = useAutosave(saveContent);
-
-  const commitTitle = useCallback(async () => {
-    const trimmed = title.trim();
-    if (trimmed === initialTitle || trimmed === "") {
-      if (trimmed === "") setTitle(initialTitle);
-      return;
-    }
-    try {
-      await api.updateDocument(docId, { title: trimmed });
-      setTitleError(null);
-    } catch (err) {
-      setTitle(initialTitle);
-      setTitleError(
-        err instanceof ApiError ? err.message : "Failed to rename document.",
+  // Patch both Query caches after a save so the dashboard reflects changes
+  // instantly on back-navigation (no refetch delay).
+  const patchCaches = useCallback(
+    (doc: Doc) => {
+      queryClient.setQueryData(
+        ["document", docId],
+        (old: { document: Doc; access: string } | undefined) =>
+          old ? { ...old, document: doc } : old,
       );
+      queryClient.setQueryData(
+        ["documents"],
+        (old: DocumentsList | undefined) => {
+          if (!old) return old;
+          const patch = <T extends Doc>(d: T): T =>
+            d.id === doc.id
+              ? { ...d, title: doc.title, updatedAt: doc.updatedAt }
+              : d;
+          return { owned: old.owned.map(patch), shared: old.shared.map(patch) };
+        },
+      );
+    },
+    [queryClient, docId],
+  );
+
+  const saveContent = useCallback(
+    async (content: TiptapDoc) => {
+      const { document } = await api.updateDocument(docId, { content });
+      patchCaches(document);
+    },
+    [docId, patchCaches],
+  );
+
+  const saveTitle = useCallback(
+    async (next: string) => {
+      const { document } = await api.updateDocument(docId, { title: next });
+      patchCaches(document);
+    },
+    [docId, patchCaches],
+  );
+
+  const content = useAutosave<TiptapDoc>(saveContent);
+  const titleSave = useAutosave<string>(saveTitle);
+
+  // Merge the two save states into one indicator.
+  const saveState = mergeSaveState(content.state, titleSave.state);
+
+  const onTitleChange = (value: string) => {
+    setTitle(value);
+    const trimmed = value.trim();
+    if (trimmed.length > 0 && trimmed !== initialTitle) {
+      titleSave.schedule(trimmed);
     }
-  }, [title, initialTitle, docId]);
+  };
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-8">
@@ -108,7 +139,14 @@ function DocumentEditor({
               View only
             </span>
           )}
-          <SaveIndicator state={state} canEdit={canEdit} onRetry={retry} />
+          <SaveIndicator
+            state={saveState}
+            canEdit={canEdit}
+            onRetry={() => {
+              content.retry();
+              titleSave.retry();
+            }}
+          />
           {isOwner && (
             <button
               onClick={() => setShareOpen(true)}
@@ -127,8 +165,9 @@ function DocumentEditor({
       <input
         value={title}
         disabled={!canEdit}
-        onChange={(e) => setTitle(e.target.value)}
-        onBlur={commitTitle}
+        maxLength={200}
+        onChange={(e) => onTitleChange(e.target.value)}
+        onBlur={() => titleSave.flush()}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -138,15 +177,21 @@ function DocumentEditor({
         className="w-full border-none bg-transparent text-3xl font-semibold tracking-tight outline-none disabled:text-neutral-800"
         placeholder="Untitled document"
       />
-      {titleError && <p className="text-sm text-red-600">{titleError}</p>}
 
       <TiptapEditor
         initialContent={initialContent}
         editable={canEdit}
-        onChange={canEdit ? schedule : undefined}
+        onChange={canEdit ? content.schedule : undefined}
       />
     </div>
   );
+}
+
+function mergeSaveState(a: SaveState, b: SaveState): SaveState {
+  if (a === "error" || b === "error") return "error";
+  if (a === "saving" || b === "saving") return "saving";
+  if (a === "saved" || b === "saved") return "saved";
+  return "idle";
 }
 
 function SaveIndicator({
@@ -154,7 +199,7 @@ function SaveIndicator({
   canEdit,
   onRetry,
 }: {
-  state: ReturnType<typeof useAutosave>["state"];
+  state: SaveState;
   canEdit: boolean;
   onRetry: () => void;
 }) {
@@ -169,6 +214,25 @@ function SaveIndicator({
     );
   }
   return null;
+}
+
+function EditorSkeleton() {
+  return (
+    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-8">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      <Skeleton className="h-10 w-2/3" />
+      <div className="flex flex-col gap-3 pt-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </div>
+  );
 }
 
 function CenterMessage({

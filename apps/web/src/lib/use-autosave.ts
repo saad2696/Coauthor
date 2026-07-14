@@ -1,22 +1,21 @@
 "use client";
 
-import type { TiptapDoc } from "@coauthor/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
 /**
- * Debounced autosave (~800 ms) for editor content (spec: Autosave). Tracks save
- * state, flushes any pending save on tab-hide / unload so edits are not dropped
- * mid-debounce (risk R5).
+ * Debounced autosave (~800 ms) for a value of type T (editor content, title,
+ * …). Tracks save state, and flushes any pending save on tab-hide / unload so
+ * edits are not dropped mid-debounce (risk R5).
  */
-export function useAutosave(
-  save: (content: TiptapDoc) => Promise<unknown>,
+export function useAutosave<T>(
+  save: (value: T) => Promise<unknown>,
   delay = 800,
 ) {
   const [state, setState] = useState<SaveState>("idle");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pending = useRef<TiptapDoc | null>(null);
+  const pending = useRef<{ value: T } | null>(null);
   const saveRef = useRef(save);
   saveRef.current = save;
 
@@ -25,23 +24,23 @@ export function useAutosave(
       clearTimeout(timer.current);
       timer.current = null;
     }
-    const content = pending.current;
-    if (content === null) return;
+    if (!pending.current) return;
+    const { value } = pending.current;
     pending.current = null;
     setState("saving");
     try {
-      await saveRef.current(content);
+      await saveRef.current(value);
       setState("saved");
     } catch {
-      // Keep the content pending so retry can re-send it.
-      pending.current = content;
+      // Keep the value pending so retry can re-send it.
+      pending.current = { value };
       setState("error");
     }
   }, []);
 
   const schedule = useCallback(
-    (content: TiptapDoc) => {
-      pending.current = content;
+    (value: T) => {
+      pending.current = { value };
       setState("saving");
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(flush, delay);
@@ -66,5 +65,5 @@ export function useAutosave(
     };
   }, [flush]);
 
-  return { state, schedule, retry };
+  return { state, schedule, flush, retry };
 }

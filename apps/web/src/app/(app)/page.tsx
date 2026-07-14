@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, type Doc, type SharedDoc } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -101,7 +102,10 @@ export default function DashboardPage() {
       </div>
 
       {isLoading && (
-        <p className="mt-8 text-sm text-neutral-500">Loading documents…</p>
+        <div className="mt-6 flex flex-col gap-8">
+          <SkeletonSection />
+          <SkeletonSection />
+        </div>
       )}
       {isError && (
         <p className="mt-8 text-sm text-red-600">
@@ -180,4 +184,20 @@ function DocumentRow({
 
 function EmptyState({ text }: { text: string }) {
   return <p className="px-4 py-6 text-sm text-neutral-400">{text}</p>;
+}
+
+function SkeletonSection() {
+  return (
+    <section>
+      <Skeleton className="mb-2 h-3 w-32" />
+      <div className="flex flex-col divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center justify-between px-4 py-3">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
