@@ -3,11 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
-/** Passwordless signup: collect name + email, email a magic sign-in link. */
+/**
+ * Signup: collect name + email. The backend creates the account with a
+ * generated password; we then send a password-reset email so the user sets
+ * their own password (no password entered on the frontend).
+ */
 export function SignupForm() {
-  const { sendSignupLink } = useAuth();
+  const { sendPasswordReset } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -23,12 +28,18 @@ export function SignupForm() {
     }
     setBusy(true);
     try {
-      await sendSignupLink(name.trim(), email.trim());
+      await api.register(name.trim(), email.trim());
+      // Trigger Firebase's password-reset email so the user sets a password.
+      await sendPasswordReset(email.trim());
       setSent(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? humanizeAuthError(err.message) : "Something went wrong.",
-      );
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError(
+          err instanceof Error ? humanizeAuthError(err.message) : "Something went wrong.",
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -39,12 +50,12 @@ export function SignupForm() {
       <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
         <p className="text-sm text-neutral-600">
-          We sent a sign-in link to <span className="font-medium">{email}</span>.
-          Open it on this device to finish creating your account — no password
-          needed.
+          Your account was created. We sent a password-setup email to{" "}
+          <span className="font-medium">{email}</span>. Open it to set your
+          password, then log in.
         </p>
         <Link href="/login" className="text-sm text-neutral-900 underline">
-          Back to login
+          Go to login
         </Link>
       </div>
     );
@@ -55,7 +66,7 @@ export function SignupForm() {
       <div className="text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Coauthor</h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Create your account — we&apos;ll email you a sign-in link
+          Create your account — we&apos;ll email you a link to set your password
         </p>
       </div>
 
@@ -94,7 +105,7 @@ export function SignupForm() {
           disabled={busy}
           className="mt-1 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50"
         >
-          {busy ? "Sending link…" : "Email me a sign-in link"}
+          {busy ? "Creating account…" : "Create account"}
         </button>
       </form>
 
@@ -110,9 +121,7 @@ export function SignupForm() {
 
 function humanizeAuthError(message: string): string {
   if (message.includes("auth/invalid-email")) return "Enter a valid email address.";
-  if (message.includes("auth/operation-not-allowed"))
-    return "Email-link sign-in is not enabled. Enable it in Firebase Auth settings.";
-  if (message.includes("auth/unauthorized-continue-uri"))
-    return "This domain is not authorized in Firebase Auth settings.";
+  if (message.includes("auth/too-many-requests"))
+    return "Too many attempts. Please try again in a moment.";
   return message;
 }

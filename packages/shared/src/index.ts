@@ -6,5 +6,6 @@ export const healthSchema = z.object({
 });
 export type Health = z.infer<typeof healthSchema>;
 
+export * from "./schemas/auth";
 export * from "./schemas/document";
 export * from "./schemas/share";

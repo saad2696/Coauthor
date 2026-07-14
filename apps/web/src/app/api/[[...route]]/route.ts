@@ -1,4 +1,9 @@
-import { createApp, createFirebaseVerifier, type AppType } from "@coauthor/api";
+import {
+  createApp,
+  createFirebaseAuthAdmin,
+  createFirebaseVerifier,
+  type AppType,
+} from "@coauthor/api";
 import { getDb } from "@coauthor/db";
 import { handle } from "hono/vercel";
 
@@ -14,6 +19,7 @@ function getApp(): AppType {
     app = createApp({
       db: getDb(),
       verifyToken: createFirebaseVerifier(),
+      auth: createFirebaseAuthAdmin(),
     });
   }
   return app;

@@ -4,7 +4,7 @@ import { ZodError } from "zod";
 
 import { AppError, errorBody } from "./lib/errors";
 import { authMiddleware } from "./middleware/auth";
-import { authRoutes } from "./routes/auth";
+import { authRoutes, publicAuthRoutes } from "./routes/auth";
 import { documentRoutes } from "./routes/documents";
 import { importRoutes } from "./routes/import";
 import { shareRoutes } from "./routes/shares";
@@ -20,6 +20,9 @@ export function createApp(deps: AppDeps) {
 
   // Unauthenticated health check (useful for deploy smoke tests).
   app.get("/health", (c) => c.json({ ok: true }));
+
+  // Public signup (no token yet) — registered before the auth guard.
+  app.route("/auth", publicAuthRoutes(deps));
 
   // Everything below requires a valid Firebase ID token.
   app.use("/*", authMiddleware(deps.verifyToken));

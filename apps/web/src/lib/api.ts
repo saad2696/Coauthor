@@ -77,6 +77,12 @@ async function apiFetch<T>(
 }
 
 export const api = {
+  register: (name: string, email: string) =>
+    apiFetch<{ email: string }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email }),
+    }),
+
   syncUser: () => apiFetch<{ user: unknown }>("/auth/sync", { method: "POST" }),
 
   listDocuments: () => apiFetch<DocumentsList>("/documents"),

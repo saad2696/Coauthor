@@ -11,6 +11,7 @@ export type ErrorCode =
   | "VALIDATION"
   | "USER_NOT_FOUND"
   | "BAD_REQUEST"
+  | "CONFLICT"
   | "INTERNAL";
 
 export class AppError extends Error {
@@ -40,6 +41,9 @@ export const badRequest = (message: string, details?: unknown) =>
 export const userNotFound = (
   message = "No registered user with that email",
 ) => new AppError("USER_NOT_FOUND", message, 404);
+
+export const conflict = (message: string) =>
+  new AppError("CONFLICT", message, 409);
 
 export function errorBody(
   code: ErrorCode,
