@@ -71,3 +71,21 @@ rejected/rewritten, and how correctness was verified.
 - **Caught a routing gotcha:** Hono mounts a child `/` at the parent prefix with no
   trailing slash, so `/api/documents/` 404s — the frontend must call
   `/api/documents`. Noted for the Phase 4 API client.
+
+## Phase 4 — Frontend: Auth + Dashboard
+
+- **Generated:** Firebase client init + `AuthProvider` (onAuthStateChanged, sign
+  in/up/out, auto-`/auth/sync`), a typed `api` client that attaches the Bearer token
+  and unwraps the uniform error envelope into `ApiError`, TanStack Query provider,
+  `/login` + `/signup` with a shared `AuthForm`, an `(app)` route-group guard, and
+  the dashboard (owned / shared sections, role badges, relative time, New-document).
+- **Human-in-the-loop / credential gating:** built the entire phase before the client
+  Firebase keys arrived, committing each task with an explicit "runtime pending client
+  keys" status rather than faking verification. Once the keys landed, verified for
+  real instead of assuming.
+- **Verified with a REAL Firebase token** (not a bypass): signed in as Alice via the
+  Firebase Auth REST API (proves apiKey + Email/Password enabled), then exercised the
+  API through the **running Next server** — `POST /api/auth/sync` → 200 (this also
+  closes the Phase 2.5 real-token check that had been deferred), `GET /api/documents`
+  → Alice sees her owned "Welcome to Coauthor"; Bob sees it under shared as `editor`.
+  `/login` renders the seeded-credentials hint.
