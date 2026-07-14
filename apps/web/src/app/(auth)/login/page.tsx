@@ -1,9 +1,9 @@
-import { AuthForm } from "@/components/auth-form";
+import { LoginForm } from "@/components/auth-form";
 
 export default function LoginPage() {
   return (
     <div className="relative">
-      <AuthForm mode="login" />
+      <LoginForm />
       <div className="mx-auto -mt-8 max-w-sm px-6 pb-10">
         <div className="rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-xs text-neutral-600">
           <p className="mb-1 font-semibold text-neutral-700">Demo accounts</p>

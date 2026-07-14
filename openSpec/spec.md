@@ -12,8 +12,10 @@
 The system SHALL authenticate users via Firebase Authentication (email/password) and SHALL mirror each authenticated user into the application database on first authenticated request.
 
 #### Scenario: Sign up
-- **WHEN** a visitor submits a valid email and password (≥ 6 chars) on the signup form
-- **THEN** a Firebase account is created, a `users` row is upserted with the Firebase UID, and the user is redirected to the dashboard
+> **Amended (owner-approved, post-Phase-7):** signup is passwordless email-link. Original password-based scenario preserved below for history.
+- **WHEN** a visitor submits their **name and email** on the signup form
+- **THEN** Firebase emails a magic sign-in link; on following it, `/auth/finish` completes sign-in, a `users` row is upserted with the Firebase UID and display name, and the user is redirected to the dashboard
+- *(original)* WHEN a visitor submits a valid email and password (≥ 6 chars) → a Firebase account is created, a `users` row is upserted, redirected to dashboard. **Login still uses email/password**, so seeded reviewer accounts are unaffected.
 
 #### Scenario: Log in
 - **WHEN** a registered user submits correct credentials
