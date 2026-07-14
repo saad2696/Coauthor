@@ -33,3 +33,23 @@ rejected/rewritten, and how correctness was verified.
 - **Verified:** `drizzle-kit generate` → reviewed SQL (3 tables, FKs, cascade on
   shares, indexes, role CHECK); `db:migrate` then confirmed tables via
   `information_schema`; `db:seed` run twice → row counts stayed 2/1/1 (idempotent).
+
+## Phase 2 — API Skeleton & Auth
+
+- **Generated:** framework-agnostic Hono app factory `createApp(deps)` (zero Next.js
+  imports, so unit-testable via `app.request()`), Firebase-admin token verifier,
+  auth middleware, `POST /auth/sync` upsert, uniform error envelope + global
+  `onError`, and a `zValidator` wrapper that funnels Zod failures into the same
+  envelope.
+- **Design choice refined (not changed):** rather than the `TEST_AUTH_BYPASS`
+  env-sniffing middleware from design §9, the `TokenVerifier` is **injected** via
+  `createApp(deps)`. Same outcome (tests bypass Firebase) but cleaner and more
+  explicit; the env flag remains documented in `.env.example`. D4 (Firebase Admin
+  verification) is unchanged.
+- **Build bug the AI caught + fixed:** `next build` failed collecting page data
+  because the API route created the DB client / verifier at module load. Made app
+  construction lazy (first request) and loaded the repo-root `.env` from
+  `next.config.mjs`, since Next only reads env from the app dir.
+- **Verified:** `app.request()` smoke (health 200, no-token 401, injected-token sync
+  200 upsert) + live `next dev` curl (health 200, no-token 401, bad-token 401 — real
+  Firebase rejection). Valid-token curl deferred to Phase 4 (needs client apiKey).
