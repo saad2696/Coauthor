@@ -118,3 +118,18 @@ rejected/rewritten, and how correctness was verified.
   correct titles, `.pdf` → 400, 1 MB+ → 400) plus a live-server multipart round-trip
   with a real Firebase token (`.md` → 201, `.pdf` → 400 with a clear message). Test
   docs cleaned up; DB back to the single seeded document.
+
+## Phase 7 — Sharing
+
+- **Generated:** the shares API (`POST`/`GET`/`DELETE` under `/documents/:id/shares`,
+  owner-only, email→user resolution, idempotent role upsert, `USER_NOT_FOUND`), and
+  the editor share dialog (email + role select, collaborator list, revoke; Share
+  button shown only to the owner).
+- **Same choke point, no new access logic:** share endpoints reuse
+  `getDocumentAccess()` — `null → 404`, non-owner → 403 — so the D6/D7 rules stay in
+  one place rather than being re-implemented.
+- **Verified:** 10/10 API matrix (editor/stranger blocked, unknown-email 404, upsert
+  updates role without duplicating, revoke) **plus a real-token end-to-end lifecycle**
+  through both accounts: Alice shares Bob as viewer → Bob reads (viewer) → Bob viewer
+  PATCH 403 → Alice upgrades Bob to editor → Bob PATCH 200 → Alice sees the edit →
+  Alice revokes → Bob 404. Temp doc cleaned up.

@@ -83,7 +83,7 @@ Do not start the next task until the current one is closed out. No batching comm
 
 - [x] 7.1 `POST /documents/:id/shares` (email + role, owner-only, upsert, 404 USER_NOT_FOUND), `GET .../shares`, `DELETE .../shares/:userId`
 - [x] 7.2 Share dialog in editor header: email input, role select (viewer/editor), collaborator list with revoke
-- [ ] 7.3 End-to-end manual check: Alice shares → Bob sees in "Shared with me" → Bob (editor) edits → Alice sees update; viewer role is read-only
+- [x] 7.3 End-to-end manual check: Alice shares → Bob sees in "Shared with me" → Bob (editor) edits → Alice sees update; viewer role is read-only
 
 ## Phase 8 — Tests, Polish, Deploy (50 min)
 
