@@ -54,7 +54,7 @@ Do not start the next task until the current one is closed out. No batching comm
 - [ ] 3.2 `GET /documents` → `{ owned, shared }` (join shares for role, order by updated_at desc)
 - [ ] 3.3 `POST /documents`, `GET /documents/:id`, `PATCH /documents/:id` (title/content, bumps updated_at), `DELETE /documents/:id`
 - [ ] 3.4 Enforce: no access → 404; viewer PATCH → 403; non-owner DELETE → 403
-- [ ] 3.5 Shared Zod schemas: `createDocumentSchema`, `updateDocumentSchema`, `tiptapDocSchema`
+- [x] 3.5 Shared Zod schemas: `createDocumentSchema`, `updateDocumentSchema`, `tiptapDocSchema`
 
 ## Phase 4 — Frontend: Auth + Dashboard (45 min)
 
