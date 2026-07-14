@@ -42,11 +42,11 @@ Do not start the next task until the current one is closed out. No batching comm
 
 ## Phase 2 — API Skeleton & Auth (45 min)
 
-- [ ] 2.1 `packages/api`: Hono app factory `createApp(deps)`; mount in `apps/web/app/api/[[...route]]/route.ts` with `runtime = 'nodejs'`
-- [ ] 2.2 Auth middleware: verify Firebase ID token (firebase-admin, service account from env), set `c.var.user`, 401 otherwise
-- [ ] 2.3 `POST /auth/sync`: upsert user row from token claims
-- [ ] 2.4 Uniform error envelope + global `onError`; `zValidator` wired with shared schemas
-- [ ] 2.5 Smoke test with curl: 401 without token, sync works with real token
+- [x] 2.1 `packages/api`: Hono app factory `createApp(deps)`; mount in `apps/web/app/api/[[...route]]/route.ts` with `runtime = 'nodejs'`
+- [x] 2.2 Auth middleware: verify Firebase ID token (firebase-admin, service account from env), set `c.var.user`, 401 otherwise
+- [x] 2.3 `POST /auth/sync`: upsert user row from token claims
+- [x] 2.4 Uniform error envelope + global `onError`; `zValidator` wired with shared schemas
+- [x] 2.5 Smoke test with curl: 401 without token, sync works with real token
 
 ## Phase 3 — Document CRUD (40 min)
 
