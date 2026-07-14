@@ -99,8 +99,8 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 9.2 Architecture note (1 page, distilled from design.md §3–§8: decisions D1–D12 table is the core)
 - [x] 9.3 AI workflow note: tools used, where AI sped things up, what was rejected/rewritten, how correctness was verified (tests + manual matrix + prod smoke)
 - [x] 9.4 SUBMISSION.md: contents list, live URL, credentials, what works / what's partial / next 2–4 hours
-- [ ] 9.5 Record 3–5 min Loom: user flow → what works E2E → deliberate cuts → key decisions (D1, D6, D8) → AI workflow
-- [ ] 9.6 Google Drive folder: code zip/link, README, architecture note, AI note, SUBMISSION.md, video-url.txt, screenshots/GIF
+- [ ] 9.5 (owner action) Record 3–5 min Loom: user flow → what works E2E → deliberate cuts → key decisions (D1, D6, D8) → AI workflow
+- [ ] 9.6 (owner action) Google Drive folder: code zip/link, README, architecture note, AI note, SUBMISSION.md, video-url.txt, screenshots/GIF
 
 ## Stretch (only if everything above is done and deployed)
 
