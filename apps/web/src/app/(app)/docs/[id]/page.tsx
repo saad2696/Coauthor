@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { api, ApiError, type Doc, type DocumentsList } from "@/lib/api";
+import { useToast } from "@/lib/toast";
 import { useAutosave, type SaveState } from "@/lib/use-autosave";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ShareDialog } from "@/components/editor/share-dialog";
@@ -70,6 +71,7 @@ function DocumentEditor({
   isViewer: boolean;
 }) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [title, setTitle] = useState(initialTitle);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -107,10 +109,17 @@ function DocumentEditor({
 
   const saveTitle = useCallback(
     async (next: string) => {
-      const { document } = await api.updateDocument(docId, { title: next });
-      patchCaches(document);
+      try {
+        const { document } = await api.updateDocument(docId, { title: next });
+        patchCaches(document);
+      } catch (err) {
+        toast(
+          err instanceof ApiError ? err.message : "Could not save the title.",
+        );
+        throw err;
+      }
     },
-    [docId, patchCaches],
+    [docId, patchCaches, toast],
   );
 
   const content = useAutosave<TiptapDoc>(saveContent);

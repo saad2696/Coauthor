@@ -14,12 +14,14 @@ import {
   type SharedDoc,
 } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
+import { useToast } from "@/lib/toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["documents"],
@@ -35,6 +37,10 @@ export default function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
       router.push(`/docs/${document.id}`);
     },
+    onError: (err) =>
+      toast(
+        err instanceof ApiError ? err.message : "Could not create document.",
+      ),
   });
 
   const importDoc = useMutation({
@@ -44,9 +50,9 @@ export default function DashboardPage() {
       router.push(`/docs/${id}`);
     },
     onError: (err) => {
-      setImportError(
-        err instanceof ApiError ? err.message : "Import failed. Try again.",
-      );
+      const msg = err instanceof ApiError ? err.message : "Import failed. Try again.";
+      setImportError(msg);
+      toast(msg);
     },
   });
 

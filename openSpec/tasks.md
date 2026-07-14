@@ -90,7 +90,7 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 8.1 Vitest in `packages/api` with test-env auth bypass + test DB URL
 - [x] 8.2 Access-control matrix suite (stranger/viewer/editor/owner × read/write/delete/share) — must pass
 - [x] 8.3 Validation tests: bad title, bad content shape, oversized/unsupported import
-- [ ] 8.4 Error toasts wired everywhere mutations can fail; empty states for dashboard sections
+- [x] 8.4 Error toasts wired everywhere mutations can fail; empty states for dashboard sections
 - [ ] 8.5 Production deploy: env vars on Vercel, migrate + seed prod Neon, full smoke test of the reviewer flow on live URL
 
 ## Phase 9 — Deliverables (45 min, non-code — protect this time)
