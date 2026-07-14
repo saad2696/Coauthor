@@ -10,11 +10,25 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "echo \"(api) tests added in Phase 8\" && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "echo \"(api) no lint configured\" && exit 0"
+  },
+  "dependencies": {
+    "@coauthor/db": "workspace:*",
+    "@coauthor/shared": "workspace:*",
+    "@hono/zod-validator": "^0.4.2",
+    "drizzle-orm": "^0.38.3",
+    "firebase-admin": "^13.0.2",
+    "hono": "^4.6.16",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@coauthor/config": "workspace:*",
-    "typescript": "^5.6.3"
+    "@types/node": "^22.10.7",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
   }
 }
