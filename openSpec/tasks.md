@@ -59,7 +59,7 @@ Do not start the next task until the current one is closed out. No batching comm
 ## Phase 4 — Frontend: Auth + Dashboard (45 min)
 
 - [x] 4.1 Firebase client SDK setup; auth context/hook exposing user + `getIdToken()`
-- [ ] 4.2 Typed API client (fetch wrapper attaching Bearer token) + TanStack Query provider
+- [x] 4.2 Typed API client (fetch wrapper attaching Bearer token) + TanStack Query provider
 - [ ] 4.3 `/login` + `/signup` pages (call `/auth/sync` on success); route guard redirecting unauthenticated users
 - [ ] 4.4 Dashboard: "My documents" / "Shared with me" sections, role badges, updated-ago, New document button → create + redirect
 - [ ] 4.5 Login page shows seeded demo credentials hint
