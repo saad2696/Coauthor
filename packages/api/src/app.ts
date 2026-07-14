@@ -6,6 +6,7 @@ import { AppError, errorBody } from "./lib/errors";
 import { authMiddleware } from "./middleware/auth";
 import { authRoutes } from "./routes/auth";
 import { documentRoutes } from "./routes/documents";
+import { importRoutes } from "./routes/import";
 import type { AppDeps, AppEnv } from "./types";
 
 /**
@@ -24,6 +25,7 @@ export function createApp(deps: AppDeps) {
 
   app.route("/auth", authRoutes(deps));
   app.route("/documents", documentRoutes(deps));
+  app.route("/import", importRoutes(deps));
 
   // Uniform error envelope (design §6/§8) — never leak stack traces.
   app.onError((err, c) => {
