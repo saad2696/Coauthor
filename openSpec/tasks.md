@@ -30,8 +30,8 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 0.2 `apps/web`: Next.js (App Router, TS, Tailwind); strict tsconfig shared from `packages/config`
 - [x] 0.3 `packages/shared`: install zod; export placeholder schema to verify cross-package imports build
 - [x] 0.4 Root scripts: `dev`, `build`, `lint`, `test`, `db:generate`, `db:migrate`, `db:seed` wired through turbo
-- [ ] 0.5 Create Neon project + Firebase project (enable Email/Password); capture env vars in `.env.example`
-- [ ] 0.6 Initial commit; create GitHub repo; connect Vercel early (deploy the skeleton now — de-risks Phase 8)
+- [x] 0.5 Create Neon project + Firebase project (enable Email/Password); capture env vars in `.env.example`
+- [x] 0.6 Initial commit; create GitHub repo; connect Vercel early (deploy the skeleton now — de-risks Phase 8) — repo + push done; Vercel deferred to Phase 8 (per owner decision, recorded)
 
 ## Phase 1 — Database Layer (30 min)
 
