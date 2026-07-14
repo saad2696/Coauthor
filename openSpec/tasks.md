@@ -69,7 +69,7 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 5.1 Tiptap editor (StarterKit + Underline), client-only mount, loads content from `GET /documents/:id`
 - [x] 5.2 Toolbar: B / I / U / H1 / H2 / bullet list / ordered list with active states; keyboard shortcuts verified
 - [ ] 5.3 Inline title rename (blur/Enter → PATCH)
-- [ ] 5.4 Debounced autosave (800 ms) with `Saving… / Saved / Save failed` indicator; flush on `beforeunload`
+- [x] 5.4 Debounced autosave (800 ms) with `Saving… / Saved / Save failed` indicator; flush on `beforeunload`
 - [ ] 5.5 Read-only mode for viewer role (editable=false, toolbar hidden, "View only" badge)
 - [ ] 5.6 Manual check: format everything, refresh, confirm lossless round-trip (spec: Formatting survives reload)
 
