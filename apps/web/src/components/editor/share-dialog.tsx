@@ -6,7 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
 
@@ -18,38 +18,52 @@ export function ShareDialog({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
-  const [email, setEmail] = useState("");
+  const [query, setQuery] = useState("");
   const [role, setRole] = useState<ShareRole>("editor");
   const [error, setError] = useState<string | null>(null);
 
+  const debouncedQuery = useDebouncedValue(query.trim(), 250);
   const sharesKey = ["shares", docId];
 
-  const { data, isLoading } = useQuery({
+  const { data: sharesData } = useQuery({
     queryKey: sharesKey,
     queryFn: () => api.listShares(docId),
   });
 
+  const { data: searchData, isFetching } = useQuery({
+    queryKey: ["userSearch", debouncedQuery],
+    queryFn: () => api.searchUsers(debouncedQuery),
+    enabled: debouncedQuery.length >= 2,
+  });
+
+  // Existing collaborators to exclude from the search dropdown.
+  const collaboratorIds = useMemo(
+    () => new Set((sharesData?.collaborators ?? []).map((c) => c.userId)),
+    [sharesData],
+  );
+  const results = (searchData?.users ?? []).filter(
+    (u) => !collaboratorIds.has(u.userId),
+  );
+
   const addShare = useMutation({
-    mutationFn: () => api.createShare(docId, email.trim(), role),
+    mutationFn: (email: string) => api.createShare(docId, email, role),
     onSuccess: () => {
-      setEmail("");
+      setQuery("");
       setError(null);
       queryClient.invalidateQueries({ queryKey: sharesKey });
     },
     onError: (err) => {
-      if (err instanceof ApiError && err.code === "USER_NOT_FOUND") {
-        setError("No registered user with that email. Only registered users can be shared with.");
-      } else {
-        setError(err instanceof ApiError ? err.message : "Failed to share.");
-      }
+      setError(err instanceof ApiError ? err.message : "Failed to share.");
     },
   });
 
   const revoke = useMutation({
     mutationFn: (userId: string) => api.deleteShare(docId, userId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: sharesKey }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: sharesKey }),
   });
+
+  const showDropdown = debouncedQuery.length >= 2;
+  const noMatches = showDropdown && !isFetching && results.length === 0;
 
   return (
     <div
@@ -71,22 +85,52 @@ export function ShareDialog({
           </button>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setError(null);
-            addShare.mutate();
-          }}
-          className="mt-4 flex gap-2"
-        >
-          <input
-            type="email"
-            required
-            placeholder="teammate@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
-          />
+        <div className="mt-4 flex gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search people by name or email"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setError(null);
+              }}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+            />
+
+            {showDropdown && (
+              <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-md border border-neutral-200 bg-white shadow-lg">
+                {isFetching && (
+                  <p className="px-3 py-2 text-sm text-neutral-400">Searching…</p>
+                )}
+                {!isFetching &&
+                  results.map((u) => (
+                    <button
+                      key={u.userId}
+                      onClick={() => addShare.mutate(u.email)}
+                      disabled={addShare.isPending}
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      <span className="flex flex-col">
+                        {u.displayName && (
+                          <span className="font-medium text-neutral-900">
+                            {u.displayName}
+                          </span>
+                        )}
+                        <span className="text-neutral-500">{u.email}</span>
+                      </span>
+                      <span className="text-xs text-neutral-400">Add</span>
+                    </button>
+                  ))}
+                {noMatches && (
+                  <p className="px-3 py-2 text-sm text-neutral-500">
+                    No registered user matches. They need to sign up first.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as ShareRole)}
@@ -95,26 +139,20 @@ export function ShareDialog({
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>
           </select>
-          <button
-            type="submit"
-            disabled={addShare.isPending}
-            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
-          >
-            Share
-          </button>
-        </form>
+        </div>
 
+        <p className="mt-2 text-xs text-neutral-400">
+          You can only share with people who already have a Coauthor account.
+        </p>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
         <div className="mt-5">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
             People with access
           </h3>
-          {isLoading ? (
-            <p className="text-sm text-neutral-400">Loading…</p>
-          ) : data && data.collaborators.length > 0 ? (
+          {sharesData && sharesData.collaborators.length > 0 ? (
             <ul className="flex flex-col divide-y divide-neutral-100">
-              {data.collaborators.map((c) => (
+              {sharesData.collaborators.map((c) => (
                 <li
                   key={c.userId}
                   className="flex items-center justify-between py-2 text-sm"
@@ -144,4 +182,13 @@ export function ShareDialog({
       </div>
     </div>
   );
+}
+
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
 }

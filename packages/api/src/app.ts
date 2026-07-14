@@ -8,6 +8,7 @@ import { authRoutes, publicAuthRoutes } from "./routes/auth";
 import { documentRoutes } from "./routes/documents";
 import { importRoutes } from "./routes/import";
 import { shareRoutes } from "./routes/shares";
+import { userRoutes } from "./routes/users";
 import type { AppDeps, AppEnv } from "./types";
 
 /**
@@ -31,6 +32,7 @@ export function createApp(deps: AppDeps) {
   app.route("/documents/:id/shares", shareRoutes(deps));
   app.route("/documents", documentRoutes(deps));
   app.route("/import", importRoutes(deps));
+  app.route("/users", userRoutes(deps));
 
   // Uniform error envelope (design §6/§8) — never leak stack traces.
   app.onError((err, c) => {

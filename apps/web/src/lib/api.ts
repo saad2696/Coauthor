@@ -85,6 +85,11 @@ export const api = {
 
   syncUser: () => apiFetch<{ user: unknown }>("/auth/sync", { method: "POST" }),
 
+  searchUsers: (q: string) =>
+    apiFetch<{ users: { userId: string; email: string; displayName: string | null }[] }>(
+      `/users/search?q=${encodeURIComponent(q)}`,
+    ),
+
   listDocuments: () => apiFetch<DocumentsList>("/documents"),
 
   createDocument: (title?: string) =>
