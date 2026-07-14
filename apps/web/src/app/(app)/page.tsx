@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError, type Doc, type SharedDoc } from "@/lib/api";
+import {
+  api,
+  ApiError,
+  type Collaborator,
+  type Doc,
+  type SharedDoc,
+} from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -119,7 +125,13 @@ export default function DashboardPage() {
             {data.owned.length === 0 ? (
               <EmptyState text="No documents yet. Click “New document” to start." />
             ) : (
-              data.owned.map((doc) => <DocumentRow key={doc.id} doc={doc} />)
+              data.owned.map((doc) => (
+                <DocumentRow
+                  key={doc.id}
+                  doc={doc}
+                  collaborators={doc.collaborators}
+                />
+              ))
             )}
           </Section>
 
@@ -160,25 +172,72 @@ function Section({
 function DocumentRow({
   doc,
   role,
+  collaborators,
 }: {
   doc: Doc | SharedDoc;
   role?: "viewer" | "editor";
+  collaborators?: Collaborator[];
 }) {
   return (
     <Link
       href={`/docs/${doc.id}`}
-      className="flex items-center justify-between px-4 py-3 transition hover:bg-neutral-50"
+      className="flex items-center justify-between gap-3 px-4 py-3 transition hover:bg-neutral-50"
     >
-      <span className="font-medium text-neutral-900">{doc.title}</span>
-      <span className="flex items-center gap-3 text-xs text-neutral-500">
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate font-medium text-neutral-900">
+          {doc.title}
+        </span>
+        {collaborators && collaborators.length > 0 && (
+          <span className="mt-0.5 truncate text-xs text-neutral-400">
+            Shared with {formatCollaborators(collaborators)}
+          </span>
+        )}
+      </span>
+      <span className="flex shrink-0 items-center gap-3 text-xs text-neutral-500">
+        {collaborators && collaborators.length > 0 && (
+          <Avatars collaborators={collaborators} />
+        )}
         {role && (
           <span className="rounded-full bg-neutral-100 px-2 py-0.5 font-medium uppercase tracking-wide text-neutral-600">
             {role}
           </span>
         )}
-        updated {timeAgo(doc.updatedAt)}
+        <span className="whitespace-nowrap">updated {timeAgo(doc.updatedAt)}</span>
       </span>
     </Link>
+  );
+}
+
+function labelFor(c: Collaborator): string {
+  return c.displayName || c.email.split("@")[0] || c.email;
+}
+
+function formatCollaborators(collaborators: Collaborator[]): string {
+  const names = collaborators.map(labelFor);
+  if (names.length <= 2) return names.join(" and ");
+  return `${names.slice(0, 2).join(", ")} +${names.length - 2} more`;
+}
+
+function Avatars({ collaborators }: { collaborators: Collaborator[] }) {
+  const shown = collaborators.slice(0, 3);
+  const extra = collaborators.length - shown.length;
+  return (
+    <span className="flex -space-x-1.5">
+      {shown.map((c) => (
+        <span
+          key={c.userId}
+          title={`${labelFor(c)} (${c.role})`}
+          className="flex h-6 w-6 items-center justify-center rounded-full border border-white bg-neutral-800 text-[10px] font-medium uppercase text-white"
+        >
+          {labelFor(c).charAt(0)}
+        </span>
+      ))}
+      {extra > 0 && (
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white bg-neutral-300 text-[10px] font-medium text-neutral-700">
+          +{extra}
+        </span>
+      )}
+    </span>
   );
 }
 

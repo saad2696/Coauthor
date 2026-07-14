@@ -15,19 +15,24 @@ export interface Doc {
   updatedAt: string;
 }
 
+export interface Collaborator {
+  userId: string;
+  email: string;
+  displayName?: string | null;
+  role: ShareRole;
+}
+
+export interface OwnedDoc extends Doc {
+  collaborators: Collaborator[];
+}
+
 export interface SharedDoc extends Doc {
   role: ShareRole;
 }
 
 export interface DocumentsList {
-  owned: Doc[];
+  owned: OwnedDoc[];
   shared: SharedDoc[];
-}
-
-export interface Collaborator {
-  userId: string;
-  email: string;
-  role: ShareRole;
 }
 
 /** Error carrying the uniform envelope's code so callers can branch on it. */

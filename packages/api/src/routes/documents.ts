@@ -1,9 +1,9 @@
-import { documentShares, documents } from "@coauthor/db";
+import { documentShares, documents, users } from "@coauthor/db";
 import {
   createDocumentSchema,
   updateDocumentSchema,
 } from "@coauthor/shared";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -27,11 +27,44 @@ export function documentRoutes(deps: AppDeps) {
   app.get("/", async (c) => {
     const uid = c.get("user").uid;
 
-    const owned = await db
+    const ownedDocs = await db
       .select()
       .from(documents)
       .where(eq(documents.ownerId, uid))
       .orderBy(desc(documents.updatedAt));
+
+    // Collaborators per owned doc, so the dashboard can show who each is shared with.
+    const ownedIds = ownedDocs.map((d) => d.id);
+    const shareRows = ownedIds.length
+      ? await db
+          .select({
+            documentId: documentShares.documentId,
+            userId: documentShares.userId,
+            email: users.email,
+            displayName: users.displayName,
+            role: documentShares.role,
+          })
+          .from(documentShares)
+          .innerJoin(users, eq(users.id, documentShares.userId))
+          .where(inArray(documentShares.documentId, ownedIds))
+      : [];
+
+    const collaboratorsByDoc = new Map<string, typeof shareRows>();
+    for (const row of shareRows) {
+      const list = collaboratorsByDoc.get(row.documentId) ?? [];
+      list.push(row);
+      collaboratorsByDoc.set(row.documentId, list);
+    }
+
+    const owned = ownedDocs.map((d) => ({
+      ...d,
+      collaborators: (collaboratorsByDoc.get(d.id) ?? []).map((r) => ({
+        userId: r.userId,
+        email: r.email,
+        displayName: r.displayName,
+        role: r.role,
+      })),
+    }));
 
     const sharedRows = await db
       .select({ doc: documents, role: documentShares.role })
