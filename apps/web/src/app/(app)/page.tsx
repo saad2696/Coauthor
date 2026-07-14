@@ -3,9 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 import { useAuth } from "@/lib/auth-context";
-import { api, type Doc, type SharedDoc } from "@/lib/api";
+import { api, ApiError, type Doc, type SharedDoc } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 
 export default function DashboardPage() {
@@ -18,6 +19,9 @@ export default function DashboardPage() {
     queryFn: api.listDocuments,
   });
 
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
   const createDoc = useMutation({
     mutationFn: () => api.createDocument(),
     onSuccess: ({ document }) => {
@@ -25,6 +29,26 @@ export default function DashboardPage() {
       router.push(`/docs/${document.id}`);
     },
   });
+
+  const importDoc = useMutation({
+    mutationFn: (file: File) => api.importFile(file),
+    onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      router.push(`/docs/${id}`);
+    },
+    onError: (err) => {
+      setImportError(
+        err instanceof ApiError ? err.message : "Import failed. Try again.",
+      );
+    },
+  });
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    setImportError(null);
+    const file = e.target.files?.[0];
+    if (file) importDoc.mutate(file);
+    e.target.value = "";
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8">
@@ -41,15 +65,39 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex items-start justify-between">
         <h2 className="text-lg font-medium">Your documents</h2>
-        <button
-          onClick={() => createDoc.mutate()}
-          disabled={createDoc.isPending}
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
-        >
-          {createDoc.isPending ? "Creating…" : "New document"}
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".txt,.md,text/plain,text/markdown"
+              onChange={onPickFile}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInput.current?.click()}
+              disabled={importDoc.isPending}
+              className="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50 disabled:opacity-50"
+            >
+              {importDoc.isPending ? "Importing…" : "Import file"}
+            </button>
+            <button
+              onClick={() => createDoc.mutate()}
+              disabled={createDoc.isPending}
+              className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700 disabled:opacity-50"
+            >
+              {createDoc.isPending ? "Creating…" : "New document"}
+            </button>
+          </div>
+          <p className="text-xs text-neutral-400">
+            Import supports .txt and .md, up to 1 MB.
+          </p>
+          {importError && (
+            <p className="text-xs text-red-600">{importError}</p>
+          )}
+        </div>
       </div>
 
       {isLoading && (
