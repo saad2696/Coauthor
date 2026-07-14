@@ -56,6 +56,24 @@ export default function DashboardPage() {
     },
   });
 
+  const deleteDoc = useMutation({
+    mutationFn: (docId: string) => api.deleteDocument(docId),
+    onSuccess: (_res, docId) => {
+      queryClient.setQueryData(
+        ["documents"],
+        (old: { owned: Doc[]; shared: SharedDoc[] } | undefined) =>
+          old
+            ? { ...old, owned: old.owned.filter((d) => d.id !== docId) }
+            : old,
+      );
+      toast("Document deleted.", "success");
+    },
+    onError: (err) =>
+      toast(
+        err instanceof ApiError ? err.message : "Could not delete document.",
+      ),
+  });
+
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     setImportError(null);
     const file = e.target.files?.[0];
@@ -136,6 +154,15 @@ export default function DashboardPage() {
                   key={doc.id}
                   doc={doc}
                   collaborators={doc.collaborators}
+                  onDelete={() => {
+                    if (
+                      window.confirm(
+                        `Delete "${doc.title}"? This can't be undone.`,
+                      )
+                    ) {
+                      deleteDoc.mutate(doc.id);
+                    }
+                  }}
                 />
               ))
             )}
@@ -179,10 +206,12 @@ function DocumentRow({
   doc,
   role,
   collaborators,
+  onDelete,
 }: {
   doc: Doc | SharedDoc;
   role?: "viewer" | "editor";
   collaborators?: Collaborator[];
+  onDelete?: () => void;
 }) {
   return (
     <Link
@@ -209,6 +238,33 @@ function DocumentRow({
           </span>
         )}
         <span className="whitespace-nowrap">updated {timeAgo(doc.updatedAt)}</span>
+        {onDelete && (
+          <button
+            aria-label="Delete document"
+            title="Delete document"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="rounded p-1 text-neutral-400 transition hover:bg-red-50 hover:text-red-600"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18" />
+              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            </svg>
+          </button>
+        )}
       </span>
     </Link>
   );
