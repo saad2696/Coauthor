@@ -7,6 +7,7 @@ import { authMiddleware } from "./middleware/auth";
 import { authRoutes } from "./routes/auth";
 import { documentRoutes } from "./routes/documents";
 import { importRoutes } from "./routes/import";
+import { shareRoutes } from "./routes/shares";
 import type { AppDeps, AppEnv } from "./types";
 
 /**
@@ -24,6 +25,7 @@ export function createApp(deps: AppDeps) {
   app.use("/*", authMiddleware(deps.verifyToken));
 
   app.route("/auth", authRoutes(deps));
+  app.route("/documents/:id/shares", shareRoutes(deps));
   app.route("/documents", documentRoutes(deps));
   app.route("/import", importRoutes(deps));
 
