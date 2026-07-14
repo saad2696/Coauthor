@@ -53,3 +53,21 @@ rejected/rewritten, and how correctness was verified.
 - **Verified:** `app.request()` smoke (health 200, no-token 401, injected-token sync
   200 upsert) + live `next dev` curl (health 200, no-token 401, bad-token 401 — real
   Firebase rejection). Valid-token curl deferred to Phase 4 (needs client apiKey).
+
+## Phase 3 — Document CRUD
+
+- **Generated:** shared Zod schemas (`createDocument`, `updateDocument`, permissive
+  `tiptapDoc`, `createShare`), the `getDocumentAccess()` choke point (D6/D7), and the
+  full document router (list/create/read/update/delete) with access enforcement.
+- **Access model kept in one place:** every `:id` route resolves through
+  `getDocumentAccess()` and maps `null → 404` (D7, don't leak existence),
+  insufficient role for a write → 403. The helper returns the document alongside the
+  access level so handlers don't refetch.
+- **Verified with a throwaway matrix harness** (self-contained fixtures, torn down
+  after): 14/14 assertions — stranger read 404, viewer/editor/owner read 200,
+  stranger write 404, viewer write 403, editor+owner write 200, bad content 400,
+  list 200, create 201, non-owner delete 403, stranger delete 404. This is a preview
+  of the Phase 8 Vitest centerpiece; the scratch script was not committed.
+- **Caught a routing gotcha:** Hono mounts a child `/` at the parent prefix with no
+  trailing slash, so `/api/documents/` 404s — the frontend must call
+  `/api/documents`. Noted for the Phase 4 API client.
