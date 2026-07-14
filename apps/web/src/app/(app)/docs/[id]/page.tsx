@@ -9,6 +9,7 @@ import { useCallback, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAutosave } from "@/lib/use-autosave";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
+import { ShareDialog } from "@/components/editor/share-dialog";
 
 export default function EditorPage() {
   const params = useParams<{ id: string }>();
@@ -47,6 +48,7 @@ export default function EditorPage() {
       initialTitle={data.document.title}
       initialContent={data.document.content}
       canEdit={canEdit}
+      isOwner={data.access === "owner"}
       isViewer={data.access === "viewer"}
     />
   );
@@ -57,16 +59,19 @@ function DocumentEditor({
   initialTitle,
   initialContent,
   canEdit,
+  isOwner,
   isViewer,
 }: {
   docId: string;
   initialTitle: string;
   initialContent: TiptapDoc;
   canEdit: boolean;
+  isOwner: boolean;
   isViewer: boolean;
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [titleError, setTitleError] = useState<string | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const saveContent = useCallback(
     (content: TiptapDoc) => api.updateDocument(docId, { content }),
@@ -104,8 +109,20 @@ function DocumentEditor({
             </span>
           )}
           <SaveIndicator state={state} canEdit={canEdit} onRetry={retry} />
+          {isOwner && (
+            <button
+              onClick={() => setShareOpen(true)}
+              className="rounded-md bg-neutral-900 px-3 py-1 text-sm font-medium text-white hover:bg-neutral-700"
+            >
+              Share
+            </button>
+          )}
         </div>
       </div>
+
+      {shareOpen && (
+        <ShareDialog docId={docId} onClose={() => setShareOpen(false)} />
+      )}
 
       <input
         value={title}
