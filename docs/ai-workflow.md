@@ -133,3 +133,25 @@ rejected/rewritten, and how correctness was verified.
   through both accounts: Alice shares Bob as viewer → Bob reads (viewer) → Bob viewer
   PATCH 403 → Alice upgrades Bob to editor → Bob PATCH 200 → Alice sees the edit →
   Alice revokes → Bob 404. Temp doc cleaned up.
+
+## Phase 8 — Tests, Polish, Deploy
+
+- **Generated:** a Vitest suite in `packages/api` — the access-control matrix
+  (owner/editor/viewer/stranger × read/write/delete/share, plus 401) as the
+  centerpiece, and validation tests (bad content shape, over-long title, empty
+  patch, import type/size, register body). `pnpm test` (root, turbo) → **24 passed**.
+- **Test isolation decision:** no separate test DB was provisioned, so the suite
+  runs against the real Neon DB via an injected bypass verifier (design §9) and a
+  stubbed Admin `createUser`, using uniquely-prefixed fixtures created/torn down per
+  test and **never touching seed data**. Runs serially (single fork) since it shares
+  one database. `TEST_DATABASE_URL` can point at a Neon branch for full isolation.
+- **Polish:** added a toast system for mutation failures (create/import/title-save),
+  keeping the editor's inline "Save failed — retry" affordance; dashboard already had
+  skeletons + empty states.
+- **Deploy (8.5) deferred** per owner — `DEPLOY.md` documents the Vercel + Neon steps;
+  production reuses the same Neon DB (already migrated + seeded), so seeded accounts
+  work in prod immediately once deployed.
+- **Beyond the base spec (owner-directed, this session):** passwordless→reset-password
+  signup, dashboard "shared with" avatars, a registered-user search dropdown in the
+  share dialog, and reliability fixes (deterministic editor content load, Query-cache
+  sync so title changes reflect instantly, debounced title save).
