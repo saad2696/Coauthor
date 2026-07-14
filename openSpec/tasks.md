@@ -66,7 +66,7 @@ Do not start the next task until the current one is closed out. No batching comm
 
 ## Phase 5 — Editor (60 min)
 
-- [ ] 5.1 Tiptap editor (StarterKit + Underline), client-only mount, loads content from `GET /documents/:id`
+- [x] 5.1 Tiptap editor (StarterKit + Underline), client-only mount, loads content from `GET /documents/:id`
 - [ ] 5.2 Toolbar: B / I / U / H1 / H2 / bullet list / ordered list with active states; keyboard shortcuts verified
 - [ ] 5.3 Inline title rename (blur/Enter → PATCH)
 - [ ] 5.4 Debounced autosave (800 ms) with `Saving… / Saved / Save failed` indicator; flush on `beforeunload`
