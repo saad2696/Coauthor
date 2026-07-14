@@ -38,7 +38,7 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 1.1 `packages/db`: Drizzle + `@neondatabase/serverless`; define `users`, `documents`, `document_shares` per design.md §5
 - [x] 1.2 Generate + run first migration against Neon
 - [x] 1.3 Seed script: creates Alice + Bob in Firebase (Admin SDK) and Postgres; creates one sample doc owned by Alice, shared to Bob as editor
-- [ ] 1.4 Export typed db client + tables from package index
+- [x] 1.4 Export typed db client + tables from package index
 
 ## Phase 2 — API Skeleton & Auth (45 min)
 
