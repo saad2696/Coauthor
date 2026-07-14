@@ -76,7 +76,7 @@ Do not start the next task until the current one is closed out. No batching comm
 ## Phase 6 — File Import (30 min)
 
 - [ ] 6.1 `POST /import`: multipart, accept `.txt`/`.md` ≤ 1 MB, reject otherwise with clear 400
-- [ ] 6.2 Convert: `.md` → marked → `generateJSON` (Tiptap html util) → jsonb; `.txt` → paragraph nodes; title from filename
+- [x] 6.2 Convert: `.md` → marked → `generateJSON` (Tiptap html util) → jsonb; `.txt` → paragraph nodes; title from filename
 - [ ] 6.3 Dashboard Import button (file input) → upload → redirect to new doc; UI states supported types + limit
 
 ## Phase 7 — Sharing (40 min)

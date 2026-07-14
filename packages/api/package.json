@@ -18,9 +18,14 @@
     "@coauthor/db": "workspace:*",
     "@coauthor/shared": "workspace:*",
     "@hono/zod-validator": "^0.4.2",
+    "@tiptap/extension-underline": "^2.10.4",
+    "@tiptap/html": "^2.10.4",
+    "@tiptap/pm": "^2.10.4",
+    "@tiptap/starter-kit": "^2.10.4",
     "drizzle-orm": "^0.38.3",
     "firebase-admin": "^13.0.2",
     "hono": "^4.6.16",
+    "marked": "^15.0.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
