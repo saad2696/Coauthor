@@ -104,3 +104,17 @@ rejected/rewritten, and how correctness was verified.
   + ordered lists, PATCHed it, refetched, and asserted a normalized deep-equal (true),
   then deleted the temp doc. The in-browser type→refresh visual check is captured in
   the walkthrough video (Phase 9).
+
+## Phase 6 — File Import
+
+- **Generated:** server-side `POST /import` (multipart, ≤1 MB, `.txt`/`.md` only), the
+  converter (`.md` → marked → `generateJSON` → jsonb, `.txt` → paragraph nodes, title
+  from filename), and the dashboard Import button with supported-types/limit copy.
+- **De-risked D10 before building:** the biggest unknown was whether Tiptap's
+  `generateJSON` runs server-side in Node (it needs a DOM). Verified it works
+  out of the box in Node 24 before writing the route — so no jsdom dependency and no
+  deviation from D10.
+- **Verified:** 9/9 in-process checks (md → heading+bulletList, txt → paragraphs,
+  correct titles, `.pdf` → 400, 1 MB+ → 400) plus a live-server multipart round-trip
+  with a real Firebase token (`.md` → 201, `.pdf` → 400 with a clear message). Test
+  docs cleaned up; DB back to the single seeded document.
