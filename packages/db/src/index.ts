@@ -1,2 +1,2 @@
-// Drizzle client + schema exports are added in Phase 1.
-export {};
+export * from "./schema";
+export { createDb, getDb, type Database } from "./client";
