@@ -4,6 +4,28 @@ Running log of how AI (Claude Code) was used during the build, captured per phas
 as required by the Execution Protocol. Records what AI generated, what was
 rejected/rewritten, and how correctness was verified.
 
+## Summary
+
+- **Tool:** Claude Code (agentic CLI) drove the whole build from the `openspec/`
+  spec/design/tasks, one commit per task with a slice-metadata trailer and a
+  `phase-N-done` tag per phase.
+- **Where it sped things up:** scaffolding the monorepo, Drizzle schema + migration,
+  the Hono routers and access-control helper, all Zod contracts, the Tiptap editor +
+  autosave, file import, sharing, and the Vitest suite — each generated then verified
+  before moving on.
+- **What was rejected / rewritten (human judgment):** avoided `create-next-app`
+  (fights the monorepo); added a DB-level `CHECK` constraint the first schema draft
+  omitted (design fidelity); replaced env-sniffing `TEST_AUTH_BYPASS` with dependency
+  injection; made API construction lazy so `next build` wouldn't need env; fixed a
+  `require()` in the Tailwind config that crashed `next dev`; made Tiptap content load
+  deterministic to fix an intermittent blank editor; used a *random* per-account
+  password (not a shared default) for the reset-based signup.
+- **How correctness was verified:** `app.request()` matrices and live-server curls with
+  **real Firebase tokens** (not just mocks); the `pnpm test` Vitest suite (24 tests,
+  access-matrix centerpiece); manual round-trip checks; deviations from locked design
+  (D4) were confirmed with the owner and written back into the spec/design in the same
+  commit — never silently.
+
 ## Phase 0 — Scaffold & Tooling
 
 - **Generated:** the full pnpm + Turborepo monorepo skeleton (root `package.json`,
