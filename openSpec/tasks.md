@@ -95,7 +95,7 @@ Do not start the next task until the current one is closed out. No batching comm
 
 ## Phase 9 — Deliverables (45 min, non-code — protect this time)
 
-- [ ] 9.1 README.md: stack summary, local setup (pnpm i → env → db:migrate → db:seed → dev), seeded credentials, supported import types, scope cuts
+- [x] 9.1 README.md: stack summary, local setup (pnpm i → env → db:migrate → db:seed → dev), seeded credentials, supported import types, scope cuts
 - [ ] 9.2 Architecture note (1 page, distilled from design.md §3–§8: decisions D1–D12 table is the core)
 - [ ] 9.3 AI workflow note: tools used, where AI sped things up, what was rejected/rewritten, how correctness was verified (tests + manual matrix + prod smoke)
 - [ ] 9.4 SUBMISSION.md: contents list, live URL, credentials, what works / what's partial / next 2–4 hours
