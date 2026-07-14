@@ -89,3 +89,18 @@ rejected/rewritten, and how correctness was verified.
   closes the Phase 2.5 real-token check that had been deferred), `GET /api/documents`
   → Alice sees her owned "Welcome to Coauthor"; Bob sees it under shared as `editor`.
   `/login` renders the seeded-credentials hint.
+
+## Phase 5 — Editor
+
+- **Generated:** the Tiptap editor (StarterKit + Underline, client-only mount),
+  formatting toolbar with active states, the editor page (inline title rename,
+  read-only viewer mode with "View only" badge), and a `useAutosave` hook (800 ms
+  debounce, `Saving…/Saved/Save failed—retry`, flush on tab-hide/unload).
+- **Rejected/adjusted:** Tailwind's preflight resets heading/list styling, so `prose`
+  classes alone rendered H1/H2 like body text — added `@tailwindcss/typography` so
+  formatting is visually distinct (and survives reload convincingly).
+- **Verified:** `pnpm build` green with `/docs/[id]`; **content round-trip fidelity
+  proven programmatically** — created a doc with H1/H2, bold/italic/underline, bullet
+  + ordered lists, PATCHed it, refetched, and asserted a normalized deep-equal (true),
+  then deleted the temp doc. The in-browser type→refresh visual check is captured in
+  the walkthrough video (Phase 9).

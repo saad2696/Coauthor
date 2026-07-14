@@ -71,7 +71,7 @@ Do not start the next task until the current one is closed out. No batching comm
 - [x] 5.3 Inline title rename (blur/Enter → PATCH)
 - [x] 5.4 Debounced autosave (800 ms) with `Saving… / Saved / Save failed` indicator; flush on `beforeunload`
 - [x] 5.5 Read-only mode for viewer role (editable=false, toolbar hidden, "View only" badge)
-- [ ] 5.6 Manual check: format everything, refresh, confirm lossless round-trip (spec: Formatting survives reload)
+- [x] 5.6 Manual check: format everything, refresh, confirm lossless round-trip (spec: Formatting survives reload)
 
 ## Phase 6 — File Import (30 min)
 
