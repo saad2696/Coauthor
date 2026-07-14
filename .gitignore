@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+.next/
+dist/
+out/
+build/
+.turbo/
+
+# env
+.env
+.env.local
+.env.*.local
+*.serviceAccount.json
+serviceAccount.json
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+.vercel
+*.tsbuildinfo
