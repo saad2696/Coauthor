@@ -50,7 +50,7 @@ Do not start the next task until the current one is closed out. No batching comm
 
 ## Phase 3 — Document CRUD (40 min)
 
-- [ ] 3.1 `getDocumentAccess(docId, userId)` helper (owner → shares lookup)
+- [x] 3.1 `getDocumentAccess(docId, userId)` helper (owner → shares lookup)
 - [ ] 3.2 `GET /documents` → `{ owned, shared }` (join shares for role, order by updated_at desc)
 - [ ] 3.3 `POST /documents`, `GET /documents/:id`, `PATCH /documents/:id` (title/content, bumps updated_at), `DELETE /documents/:id`
 - [ ] 3.4 Enforce: no access → 404; viewer PATCH → 403; non-owner DELETE → 403
