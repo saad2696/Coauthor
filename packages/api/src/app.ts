@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import { AppError, errorBody } from "./lib/errors";
 import { authMiddleware } from "./middleware/auth";
 import { authRoutes } from "./routes/auth";
+import { documentRoutes } from "./routes/documents";
 import type { AppDeps, AppEnv } from "./types";
 
 /**
@@ -22,6 +23,7 @@ export function createApp(deps: AppDeps) {
   app.use("/*", authMiddleware(deps.verifyToken));
 
   app.route("/auth", authRoutes(deps));
+  app.route("/documents", documentRoutes(deps));
 
   // Uniform error envelope (design §6/§8) — never leak stack traces.
   app.onError((err, c) => {
