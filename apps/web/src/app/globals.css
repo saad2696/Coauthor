@@ -87,10 +87,20 @@ body {
   }
 }
 
+.auth-blink {
+  animation: auth-blink 1.1s step-end infinite;
+}
+@keyframes auth-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .auth-ripple,
   .auth-float,
-  .auth-orbit {
+  .auth-orbit,
+  .auth-blink {
     animation: none;
   }
 }

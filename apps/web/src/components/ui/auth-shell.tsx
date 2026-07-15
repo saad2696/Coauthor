@@ -1,6 +1,7 @@
 import { FileText, Share2, Sparkles } from "lucide-react";
 
 import { BrandMark } from "@/components/ui/brand-mark";
+import { EditorPreview } from "@/components/ui/editor-preview";
 
 export function AuthShell({
   title,
@@ -28,30 +29,14 @@ export function AuthShell({
           aria-hidden
         />
 
-        {/* Animated monochrome graphic */}
+        {/* Ambient animated rings */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           <span className="auth-ripple" />
           <span className="auth-ripple" style={{ animationDelay: "2s" }} />
           <span className="auth-ripple" style={{ animationDelay: "4s" }} />
-
-          {/* Orbiting dot around the centre */}
-          <div className="auth-orbit absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10">
-            <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
+          <div className="auth-orbit absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.07]">
+            <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/50" />
           </div>
-
-          {/* Floating document files */}
-          <FloatingDoc className="right-16 top-20 w-32" lines={4} icon />
-          <FloatingDoc
-            className="left-14 bottom-28 w-24"
-            lines={2}
-            delay="1.8s"
-          />
-          <FloatingDoc
-            className="right-28 bottom-44 w-20"
-            lines={2}
-            delay="3.2s"
-          />
-          <FloatingDoc className="left-24 top-28 w-16" lines={1} delay="0.9s" />
         </div>
 
         <div className="relative flex items-center gap-2.5">
@@ -59,25 +44,29 @@ export function AuthShell({
           <span className="text-lg font-semibold tracking-tight">Coauthor</span>
         </div>
 
-        <div className="relative max-w-md">
-          <h2 className="text-3xl font-semibold leading-tight tracking-tight">
-            Write together.<br />Share in a click.
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-neutral-400">
-            A clean, collaborative document editor — rich text, autosave, and
-            role-based sharing.
-          </p>
+        <div className="relative flex flex-1 flex-col justify-center gap-8 py-10">
+          <div className="max-w-md">
+            <h2 className="text-4xl font-semibold leading-[1.1] tracking-tight">
+              Write together.
+              <br />
+              <span className="text-white/60">Share in a click.</span>
+            </h2>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-neutral-400">
+              A clean, collaborative document editor — rich text, autosave, and
+              role-based sharing.
+            </p>
+          </div>
 
-          <ul className="mt-8 flex flex-col gap-4 text-sm">
-            <Feature icon={<FileText size={16} />} text="Rich-text editor with autosave" />
-            <Feature icon={<Share2 size={16} />} text="Share as viewer or editor" />
-            <Feature icon={<Sparkles size={16} />} text="Import Markdown & text files" />
-          </ul>
+          <EditorPreview />
+
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-neutral-400">
+            <InlineFeature icon={<FileText size={13} />} text="Autosave" />
+            <InlineFeature icon={<Share2 size={13} />} text="Viewer / editor sharing" />
+            <InlineFeature icon={<Sparkles size={13} />} text="Markdown import" />
+          </div>
         </div>
 
-        <p className="relative text-xs text-neutral-500">
-          © {"2026"} Coauthor
-        </p>
+        <p className="relative text-xs text-neutral-500">© 2026 Coauthor</p>
       </aside>
 
       {/* Right: form */}
@@ -102,48 +91,18 @@ export function AuthShell({
   );
 }
 
-/** A small translucent document mockup that floats in the dark auth panel. */
-function FloatingDoc({
-  className = "",
-  lines = 3,
-  icon = false,
-  delay = "0s",
+function InlineFeature({
+  icon,
+  text,
 }: {
-  className?: string;
-  lines?: number;
-  icon?: boolean;
-  delay?: string;
+  icon: React.ReactNode;
+  text: string;
 }) {
   return (
-    <div
-      className={`auth-float absolute rounded-lg border border-white/10 bg-white/[0.06] p-2.5 shadow-lg shadow-black/20 backdrop-blur-sm ${className}`}
-      style={{ animationDelay: delay }}
-    >
-      <div className="mb-2 flex items-center gap-1.5">
-        {icon && <FileText size={11} className="text-white/50" />}
-        <div className="h-1.5 flex-1 rounded-full bg-white/30" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        {Array.from({ length: lines }).map((_, i) => (
-          <div
-            key={i}
-            className="h-1 rounded-full bg-white/15"
-            style={{ width: `${90 - i * 12}%` }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Feature({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <li className="flex items-center gap-3 text-neutral-300">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white">
-        {icon}
-      </span>
+    <span className="inline-flex items-center gap-1.5">
+      <span className="text-white/70">{icon}</span>
       {text}
-    </li>
+    </span>
   );
 }
 
