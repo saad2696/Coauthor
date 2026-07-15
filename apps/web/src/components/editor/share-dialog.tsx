@@ -87,8 +87,9 @@ export function ShareDialog({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, people.length]);
 
   const addShare = useMutation({
-    mutationFn: () => api.createShare(docId, selected!.email, role),
-    onSuccess: () => {
+    mutationFn: (email: string) => api.createShare(docId, email, role),
+    onSuccess: (_res, email) => {
+      toast(`Shared with ${email} as ${role}.`, "success");
       setSelected(null);
       setQuery("");
       queryClient.invalidateQueries({ queryKey: sharesKey });
@@ -101,6 +102,7 @@ export function ShareDialog({
   const revoke = useMutation({
     mutationFn: (userId: string) => api.deleteShare(docId, userId),
     onSuccess: () => {
+      toast("Access revoked.", "success");
       queryClient.invalidateQueries({ queryKey: sharesKey });
       queryClient.invalidateQueries({ queryKey: ["userSearch"] });
     },
@@ -272,7 +274,7 @@ export function ShareDialog({
             <option value="viewer">Viewer</option>
           </select>
           <button
-            onClick={() => addShare.mutate()}
+            onClick={() => selected && addShare.mutate(selected.email)}
             disabled={!selected || addShare.isPending}
             className="flex-1 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-40"
           >
