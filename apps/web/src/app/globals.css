@@ -38,3 +38,59 @@ body {
     @apply w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-[15px] text-neutral-900 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200;
   }
 }
+
+/* ── Auth panel animated graphic (monochrome) ── */
+.auth-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 340px;
+  width: 340px;
+  margin: -170px 0 0 -170px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  animation: auth-ripple 6s ease-out infinite;
+}
+@keyframes auth-ripple {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.auth-float {
+  animation: auth-float 7s ease-in-out infinite;
+}
+@keyframes auth-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+.auth-orbit {
+  animation: auth-orbit 24s linear infinite;
+}
+@keyframes auth-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-ripple,
+  .auth-float,
+  .auth-orbit {
+    animation: none;
+  }
+}
