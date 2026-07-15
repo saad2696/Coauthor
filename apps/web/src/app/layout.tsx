@@ -13,8 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    // suppressHydrationWarning: some browser extensions (e.g. ColorZilla adds
+    // `cz-shortcut-listen`) mutate <body> before React hydrates; ignore that diff.
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

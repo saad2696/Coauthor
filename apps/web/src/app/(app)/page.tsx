@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Plus, Trash2, Upload } from "lucide-react";
+import { FileText, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef } from "react";
@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ["documents"],
     queryFn: api.listDocuments,
   });
@@ -86,6 +86,15 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => refetch()}
+              disabled={isFetching}
+              title="Refresh"
+              aria-label="Refresh documents"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={isFetching ? "animate-spin" : ""} />
+            </button>
             <input
               ref={fileInput}
               type="file"
