@@ -90,9 +90,12 @@ export const api = {
 
   syncUser: () => apiFetch<{ user: unknown }>("/auth/sync", { method: "POST" }),
 
-  searchUsers: (q: string) =>
-    apiFetch<{ users: { userId: string; email: string; displayName: string | null }[] }>(
-      `/users/search?q=${encodeURIComponent(q)}`,
+  searchUsers: (q: string, offset = 0, limit = 10) =>
+    apiFetch<{
+      users: { userId: string; email: string; displayName: string | null }[];
+      nextOffset: number | null;
+    }>(
+      `/users/search?offset=${offset}&limit=${limit}${q ? `&q=${encodeURIComponent(q)}` : ""}`,
     ),
 
   listDocuments: () => apiFetch<DocumentsList>("/documents"),

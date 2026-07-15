@@ -2,16 +2,22 @@
 
 import type { ShareRole } from "@coauthor/shared";
 import {
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Search, UserPlus, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Check, Search, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
 import { useConfirm } from "@/lib/confirm";
 import { useToast } from "@/lib/toast";
+
+interface Picked {
+  userId: string;
+  email: string;
+}
 
 export function ShareDialog({
   docId,
@@ -25,6 +31,7 @@ export function ShareDialog({
   const confirm = useConfirm();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<ShareRole>("editor");
+  const [selected, setSelected] = useState<Picked | null>(null);
 
   const debouncedQuery = useDebouncedValue(query.trim(), 250);
   const sharesKey = ["shares", docId];
@@ -34,26 +41,53 @@ export function ShareDialog({
     queryFn: () => api.listShares(docId),
   });
 
-  const { data: searchData, isFetching } = useQuery({
-    queryKey: ["userSearch", debouncedQuery],
-    queryFn: () => api.searchUsers(debouncedQuery),
-    enabled: debouncedQuery.length >= 2,
-  });
-
-  // Existing collaborators to exclude from the search dropdown.
   const collaboratorIds = useMemo(
     () => new Set((sharesData?.collaborators ?? []).map((c) => c.userId)),
     [sharesData],
   );
-  const results = (searchData?.users ?? []).filter(
-    (u) => !collaboratorIds.has(u.userId),
+
+  const {
+    data: pages,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["userSearch", debouncedQuery],
+    queryFn: ({ pageParam }) => api.searchUsers(debouncedQuery, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (last) => last.nextOffset ?? undefined,
+  });
+
+  const people = useMemo(
+    () =>
+      (pages?.pages ?? [])
+        .flatMap((p) => p.users)
+        .filter((u) => !collaboratorIds.has(u.userId)),
+    [pages, collaboratorIds],
   );
 
+  // Infinite scroll: load more when the sentinel scrolls into view.
+  const sentinel = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, people.length]);
+
   const addShare = useMutation({
-    mutationFn: (email: string) => api.createShare(docId, email, role),
+    mutationFn: () => api.createShare(docId, selected!.email, role),
     onSuccess: () => {
+      setSelected(null);
       setQuery("");
       queryClient.invalidateQueries({ queryKey: sharesKey });
+      queryClient.invalidateQueries({ queryKey: ["userSearch"] });
     },
     onError: (err) =>
       toast(err instanceof ApiError ? err.message : "Failed to share."),
@@ -61,7 +95,10 @@ export function ShareDialog({
 
   const revoke = useMutation({
     mutationFn: (userId: string) => api.deleteShare(docId, userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: sharesKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sharesKey });
+      queryClient.invalidateQueries({ queryKey: ["userSearch"] });
+    },
     onError: (err) =>
       toast(err instanceof ApiError ? err.message : "Failed to revoke access."),
   });
@@ -76,8 +113,7 @@ export function ShareDialog({
     if (ok) revoke.mutate(userId);
   }
 
-  const showDropdown = debouncedQuery.length >= 2;
-  const noMatches = showDropdown && !isFetching && results.length === 0;
+  const emptyList = !isFetching && people.length === 0;
 
   return (
     <div
@@ -85,7 +121,7 @@ export function ShareDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl"
+        className="flex max-h-[85vh] w-full max-w-md flex-col rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -99,53 +135,79 @@ export function ShareDialog({
           </button>
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <div className="relative flex-1">
-            <Search
-              size={15}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-            />
-            <input
-              type="text"
-              placeholder="Search people by name or email"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200"
-            />
+        {/* Search */}
+        <div className="relative mt-4">
+          <Search
+            size={15}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+          />
+          <input
+            type="text"
+            placeholder="Search people by name or email"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200"
+          />
+        </div>
 
-            {showDropdown && (
-              <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-md border border-neutral-200 bg-white shadow-lg">
-                {isFetching && (
-                  <p className="px-3 py-2 text-sm text-neutral-400">Searching…</p>
-                )}
-                {!isFetching &&
-                  results.map((u) => (
+        {/* User directory (click to select) */}
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-lg border border-neutral-200">
+          {emptyList ? (
+            <p className="px-3 py-6 text-center text-sm text-neutral-400">
+              {query
+                ? "No registered user matches. They need to sign up first."
+                : "No other users yet."}
+            </p>
+          ) : (
+            <ul className="divide-y divide-neutral-100">
+              {people.map((u) => {
+                const isSel = selected?.userId === u.userId;
+                return (
+                  <li key={u.userId}>
                     <button
-                      key={u.userId}
-                      onClick={() => addShare.mutate(u.email)}
-                      disabled={addShare.isPending}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-neutral-50 disabled:opacity-50"
+                      onClick={() =>
+                        setSelected(isSel ? null : { userId: u.userId, email: u.email })
+                      }
+                      className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition hover:bg-neutral-50"
                     >
-                      <span className="flex flex-col">
+                      <span
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                          isSel
+                            ? "border-neutral-900 bg-neutral-900 text-white"
+                            : "border-neutral-300"
+                        }`}
+                      >
+                        {isSel && <Check size={11} strokeWidth={3} />}
+                      </span>
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-[11px] font-semibold uppercase text-white">
+                        {(u.displayName || u.email).charAt(0)}
+                      </span>
+                      <span className="flex min-w-0 flex-col">
                         {u.displayName && (
-                          <span className="font-medium text-neutral-900">
+                          <span className="truncate font-medium text-neutral-900">
                             {u.displayName}
                           </span>
                         )}
-                        <span className="text-neutral-500">{u.email}</span>
+                        <span className="truncate text-neutral-500">{u.email}</span>
                       </span>
-                      <UserPlus size={15} className="text-neutral-500" />
                     </button>
-                  ))}
-                {noMatches && (
-                  <p className="px-3 py-2 text-sm text-neutral-500">
-                    No registered user matches. They need to sign up first.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+                  </li>
+                );
+              })}
+              {(isFetching || hasNextPage) && (
+                <li
+                  ref={sentinel}
+                  className="px-3 py-3 text-center text-xs text-neutral-400"
+                >
+                  Loading…
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
 
+        {/* Role + share action */}
+        <div className="mt-3 flex items-center gap-2">
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as ShareRole)}
@@ -154,13 +216,21 @@ export function ShareDialog({
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>
           </select>
+          <button
+            onClick={() => addShare.mutate()}
+            disabled={!selected || addShare.isPending}
+            className="flex-1 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-40"
+          >
+            {addShare.isPending
+              ? "Sharing…"
+              : selected
+                ? `Share with ${selected.email}`
+                : "Select a person to share"}
+          </button>
         </div>
 
-        <p className="mt-2 text-xs text-neutral-400">
-          You can only share with people who already have a Coauthor account.
-        </p>
-
-        <div className="mt-5">
+        {/* Current collaborators */}
+        <div className="mt-5 border-t border-neutral-100 pt-4">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
             People with access
           </h3>
@@ -171,7 +241,7 @@ export function ShareDialog({
                   key={c.userId}
                   className="flex items-center justify-between py-2 text-sm"
                 >
-                  <span>{c.email}</span>
+                  <span className="truncate">{c.email}</span>
                   <span className="flex items-center gap-3">
                     <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs uppercase text-neutral-600">
                       {c.role}
@@ -188,9 +258,7 @@ export function ShareDialog({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-neutral-400">
-              Not shared with anyone yet.
-            </p>
+            <p className="text-sm text-neutral-400">Not shared with anyone yet.</p>
           )}
         </div>
       </div>
