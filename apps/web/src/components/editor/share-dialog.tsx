@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useConfirm } from "@/lib/confirm";
 import { useToast } from "@/lib/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Picked {
   userId: string;
@@ -41,9 +42,13 @@ export function ShareDialog({
     queryFn: () => api.listShares(docId),
   });
 
-  const collaboratorIds = useMemo(
-    () => new Set((sharesData?.collaborators ?? []).map((c) => c.userId)),
+  const collaborators = useMemo(
+    () => sharesData?.collaborators ?? [],
     [sharesData],
+  );
+  const collaboratorIds = useMemo(
+    () => new Set(collaborators.map((c) => c.userId)),
+    [collaborators],
   );
 
   const {
@@ -113,7 +118,9 @@ export function ShareDialog({
     if (ok) revoke.mutate(userId);
   }
 
-  const emptyList = !isFetching && people.length === 0;
+  const showSkeleton = isFetching && people.length === 0;
+  const emptyList =
+    !isFetching && people.length === 0 && collaborators.length === 0;
 
   return (
     <div
@@ -160,7 +167,55 @@ export function ShareDialog({
             </p>
           ) : (
             <ul className="divide-y divide-neutral-100">
-              {people.map((u) => {
+              {/* Already shared — shown first, with a badge + revoke */}
+              {collaborators.map((c) => (
+                <li
+                  key={c.userId}
+                  className="flex items-center gap-3 px-3 py-2.5 text-sm"
+                >
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+                    <Check size={11} strokeWidth={3} />
+                  </span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-[11px] font-semibold uppercase text-white">
+                    {(c.displayName || c.email).charAt(0)}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    {c.displayName && (
+                      <span className="truncate font-medium text-neutral-900">
+                        {c.displayName}
+                      </span>
+                    )}
+                    <span className="truncate text-neutral-500">{c.email}</span>
+                  </span>
+                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-neutral-600">
+                    {c.role}
+                  </span>
+                  <button
+                    onClick={() => onRevoke(c.userId, c.email)}
+                    disabled={revoke.isPending}
+                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    Revoke
+                  </button>
+                </li>
+              ))}
+
+              {/* Initial load skeleton */}
+              {showSkeleton &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <li key={`sk-${i}`} className="flex items-center gap-3 px-3 py-2.5">
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                    <Skeleton className="h-7 w-7 rounded-full" />
+                    <div className="flex flex-1 flex-col gap-1.5">
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-2.5 w-40" />
+                    </div>
+                  </li>
+                ))}
+
+              {/* Everyone else — selectable to share */}
+              {!showSkeleton &&
+                people.map((u) => {
                 const isSel = selected?.userId === u.userId;
                 return (
                   <li key={u.userId}>
@@ -194,12 +249,12 @@ export function ShareDialog({
                   </li>
                 );
               })}
-              {(isFetching || hasNextPage) && (
+              {!showSkeleton && hasNextPage && (
                 <li
                   ref={sentinel}
                   className="px-3 py-3 text-center text-xs text-neutral-400"
                 >
-                  Loading…
+                  {isFetchingNextPage ? "Loading…" : ""}
                 </li>
               )}
             </ul>
@@ -227,39 +282,6 @@ export function ShareDialog({
                 ? `Share with ${selected.email}`
                 : "Select a person to share"}
           </button>
-        </div>
-
-        {/* Current collaborators */}
-        <div className="mt-5 border-t border-neutral-100 pt-4">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            People with access
-          </h3>
-          {sharesData && sharesData.collaborators.length > 0 ? (
-            <ul className="flex flex-col divide-y divide-neutral-100">
-              {sharesData.collaborators.map((c) => (
-                <li
-                  key={c.userId}
-                  className="flex items-center justify-between py-2 text-sm"
-                >
-                  <span className="truncate">{c.email}</span>
-                  <span className="flex items-center gap-3">
-                    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs uppercase text-neutral-600">
-                      {c.role}
-                    </span>
-                    <button
-                      onClick={() => onRevoke(c.userId, c.email)}
-                      disabled={revoke.isPending}
-                      className="text-red-600 hover:underline disabled:opacity-50"
-                    >
-                      Revoke
-                    </button>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-neutral-400">Not shared with anyone yet.</p>
-          )}
         </div>
       </div>
     </div>
