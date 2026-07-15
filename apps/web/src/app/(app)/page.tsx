@@ -105,7 +105,7 @@ export default function DashboardPage() {
             <button
               onClick={() => createDoc.mutate()}
               disabled={createDoc.isPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-neutral-700 disabled:opacity-50"
             >
               <Plus size={16} />
               {createDoc.isPending ? "Creating…" : "New document"}
@@ -215,7 +215,7 @@ function DocumentCard({
         className="flex h-full flex-col rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md"
       >
         <div className="flex items-start justify-between">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100 text-neutral-900">
             <FileText size={18} />
           </span>
           {role && (
@@ -266,7 +266,7 @@ function Avatars({ collaborators }: { collaborators: Collaborator[] }) {
         <span
           key={c.userId}
           title={`${labelFor(c)} (${c.role})`}
-          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-indigo-500 text-[10px] font-semibold uppercase text-white"
+          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-neutral-800 text-[10px] font-semibold uppercase text-white"
         >
           {labelFor(c).charAt(0)}
         </span>

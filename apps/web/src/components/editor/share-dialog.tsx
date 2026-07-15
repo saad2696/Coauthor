@@ -100,7 +100,7 @@ export function ShareDialog({
                 setQuery(e.target.value);
                 setError(null);
               }}
-              className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200"
             />
 
             {showDropdown && (
@@ -124,7 +124,7 @@ export function ShareDialog({
                         )}
                         <span className="text-neutral-500">{u.email}</span>
                       </span>
-                      <UserPlus size={15} className="text-indigo-500" />
+                      <UserPlus size={15} className="text-neutral-500" />
                     </button>
                   ))}
                 {noMatches && (
@@ -139,7 +139,7 @@ export function ShareDialog({
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as ShareRole)}
-            className="rounded-lg border border-neutral-300 px-2 py-2 text-sm outline-none focus:border-indigo-500"
+            className="rounded-lg border border-neutral-300 px-2 py-2 text-sm outline-none focus:border-neutral-900"
           >
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>

@@ -10,12 +10,12 @@ export function AuthShell({
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       {/* soft background accents */}
-      <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-64 w-64 rounded-full bg-violet-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-neutral-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-64 w-64 rounded-full bg-neutral-200/40 blur-3xl" />
 
       <div className="relative w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center gap-2">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 text-lg font-bold text-white shadow-sm">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-900 text-lg font-bold text-white shadow-sm">
             C
           </span>
           <h1 className="text-xl font-semibold tracking-tight text-neutral-900">
@@ -58,7 +58,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={busy}
-      className="mt-1 rounded-lg bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
+      className="mt-1 rounded-lg bg-neutral-900 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-700 disabled:opacity-50"
     >
       {busy ? "Please wait…" : children}
     </button>

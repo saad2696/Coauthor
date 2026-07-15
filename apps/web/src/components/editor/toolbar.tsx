@@ -66,7 +66,7 @@ function Btn({
       onClick={onClick}
       className={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         active
-          ? "bg-indigo-600 text-white"
+          ? "bg-neutral-900 text-white"
           : "text-neutral-600 hover:bg-neutral-100"
       }`}
     >
