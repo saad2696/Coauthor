@@ -10,6 +10,8 @@ import { Search, UserPlus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
+import { useConfirm } from "@/lib/confirm";
+import { useToast } from "@/lib/toast";
 
 export function ShareDialog({
   docId,
@@ -19,9 +21,10 @@ export function ShareDialog({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const [query, setQuery] = useState("");
   const [role, setRole] = useState<ShareRole>("editor");
-  const [error, setError] = useState<string | null>(null);
 
   const debouncedQuery = useDebouncedValue(query.trim(), 250);
   const sharesKey = ["shares", docId];
@@ -50,18 +53,28 @@ export function ShareDialog({
     mutationFn: (email: string) => api.createShare(docId, email, role),
     onSuccess: () => {
       setQuery("");
-      setError(null);
       queryClient.invalidateQueries({ queryKey: sharesKey });
     },
-    onError: (err) => {
-      setError(err instanceof ApiError ? err.message : "Failed to share.");
-    },
+    onError: (err) =>
+      toast(err instanceof ApiError ? err.message : "Failed to share."),
   });
 
   const revoke = useMutation({
     mutationFn: (userId: string) => api.deleteShare(docId, userId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: sharesKey }),
+    onError: (err) =>
+      toast(err instanceof ApiError ? err.message : "Failed to revoke access."),
   });
+
+  async function onRevoke(userId: string, email: string) {
+    const ok = await confirm({
+      title: "Revoke access",
+      message: `${email} will no longer be able to open this document.`,
+      confirmLabel: "Revoke",
+      danger: true,
+    });
+    if (ok) revoke.mutate(userId);
+  }
 
   const showDropdown = debouncedQuery.length >= 2;
   const noMatches = showDropdown && !isFetching && results.length === 0;
@@ -96,10 +109,7 @@ export function ShareDialog({
               type="text"
               placeholder="Search people by name or email"
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setError(null);
-              }}
+              onChange={(e) => setQuery(e.target.value)}
               className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-200"
             />
 
@@ -149,7 +159,6 @@ export function ShareDialog({
         <p className="mt-2 text-xs text-neutral-400">
           You can only share with people who already have a Coauthor account.
         </p>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
         <div className="mt-5">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
@@ -168,7 +177,7 @@ export function ShareDialog({
                       {c.role}
                     </span>
                     <button
-                      onClick={() => revoke.mutate(c.userId)}
+                      onClick={() => onRevoke(c.userId, c.email)}
                       disabled={revoke.isPending}
                       className="text-red-600 hover:underline disabled:opacity-50"
                     >

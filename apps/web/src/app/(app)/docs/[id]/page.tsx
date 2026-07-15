@@ -156,7 +156,7 @@ function DocumentEditor({
       <header className="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 transition hover:text-neutral-900"
           >
             <ArrowLeft size={16} />
@@ -283,7 +283,7 @@ function CenterMessage({
     <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-sm text-neutral-500">
       <p>{text}</p>
       {withBack && (
-        <Link href="/" className="text-neutral-900 underline">
+        <Link href="/dashboard" className="text-neutral-900 underline">
           Back to documents
         </Link>
       )}

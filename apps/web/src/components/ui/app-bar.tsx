@@ -13,7 +13,7 @@ export function AppBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 text-neutral-900">
+        <Link href="/dashboard" className="flex items-center gap-2 text-neutral-900">
           <BrandMark size={28} />
           <span className="text-[15px] font-semibold tracking-tight">
             Coauthor

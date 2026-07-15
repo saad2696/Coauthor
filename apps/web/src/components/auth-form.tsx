@@ -22,7 +22,7 @@ export function LoginForm() {
     setBusy(true);
     try {
       await signIn(email, password);
-      router.push("/");
+      router.push("/dashboard");
     } catch (err) {
       setError(
         err instanceof Error ? humanizeAuthError(err.message) : "Something went wrong.",

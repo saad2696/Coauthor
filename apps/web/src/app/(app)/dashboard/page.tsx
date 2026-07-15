@@ -14,6 +14,7 @@ import {
   type SharedDoc,
 } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
+import { useConfirm } from "@/lib/confirm";
 import { useToast } from "@/lib/toast";
 import { AppBar } from "@/components/ui/app-bar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,8 +23,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const confirm = useConfirm();
 
-  const { data, isLoading, isError, isFetching, refetch } = useQuery({
+  const { data, isError, isFetching, refetch } = useQuery({
     queryKey: ["documents"],
     queryFn: api.listDocuments,
   });
@@ -128,14 +130,14 @@ export default function DashboardPage() {
           </p>
         )}
 
-        {isLoading && (
+        {isFetching && (
           <div className="mt-10 flex flex-col gap-10">
             <SkeletonSection />
             <SkeletonSection />
           </div>
         )}
 
-        {data && (
+        {!isFetching && data && (
           <div className="mt-10 flex flex-col gap-10">
             <Section
               title="My documents"
@@ -147,10 +149,14 @@ export default function DashboardPage() {
                   key={doc.id}
                   doc={doc}
                   collaborators={doc.collaborators}
-                  onDelete={() => {
-                    if (window.confirm(`Delete "${doc.title}"? This can't be undone.`)) {
-                      deleteDoc.mutate(doc.id);
-                    }
+                  onDelete={async () => {
+                    const ok = await confirm({
+                      title: "Delete document",
+                      message: `"${doc.title}" will be permanently deleted. This can't be undone.`,
+                      confirmLabel: "Delete",
+                      danger: true,
+                    });
+                    if (ok) deleteDoc.mutate(doc.id);
                   }}
                 />
               ))}
