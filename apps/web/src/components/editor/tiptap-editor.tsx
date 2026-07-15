@@ -4,7 +4,7 @@ import type { TiptapDoc } from "@coauthor/shared";
 import { EditorContent, type JSONContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import { Toolbar } from "./toolbar";
 
@@ -39,16 +39,20 @@ export function TiptapEditor({
     },
   });
 
-  // Deterministically load content once the editor instance is ready. The
-  // `content` option only applies at creation and can race with the client-only
-  // mount, which occasionally left the editor blank; setting it on ready fixes
-  // that. `false` = don't emit an update (so this doesn't trigger autosave).
-  const initialRef = useRef(initialContent);
+  // Load content when the editor is ready AND whenever the incoming content
+  // changes (e.g. a refetch after a collaborator saved) — but never while this
+  // user is actively typing, so we don't clobber their in-progress edits. This
+  // fixes both the blank-editor race on open and "I don't see the other user's
+  // saved changes" on reopen/tab-focus. `false` = don't emit an update.
   useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(initialRef.current as JSONContent, false);
+    if (!editor) return;
+    if (editor.isFocused) return;
+    const incoming = JSON.stringify(initialContent);
+    const current = JSON.stringify(editor.getJSON());
+    if (incoming !== current) {
+      editor.commands.setContent(initialContent as JSONContent, false);
     }
-  }, [editor]);
+  }, [editor, initialContent]);
 
   // Keep editability in sync if the resolved access changes.
   useEffect(() => {

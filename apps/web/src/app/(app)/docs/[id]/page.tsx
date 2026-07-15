@@ -4,7 +4,7 @@ import type { TiptapDoc } from "@coauthor/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { api, ApiError, type Doc, type DocumentsList } from "@/lib/api";
 import { useToast } from "@/lib/toast";
@@ -21,6 +21,12 @@ export default function EditorPage() {
     queryKey: ["document", id],
     queryFn: () => api.getDocument(id),
     retry: false,
+    // Always pull the latest saved content on open, and refresh when the tab
+    // regains focus, so a collaborator's saved edits show up (D8: last-write-wins,
+    // not live sync — refresh-on-focus, no polling).
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   if (isLoading) return <EditorSkeleton />;
@@ -74,6 +80,14 @@ function DocumentEditor({
   const { toast } = useToast();
   const [title, setTitle] = useState(initialTitle);
   const [shareOpen, setShareOpen] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  // Reflect a collaborator's renamed title on refetch, unless this user is
+  // currently editing the title field.
+  useEffect(() => {
+    if (titleRef.current && document.activeElement === titleRef.current) return;
+    setTitle(initialTitle);
+  }, [initialTitle]);
 
   // Patch both Query caches after a save so the dashboard reflects changes
   // instantly on back-navigation (no refetch delay).
@@ -172,6 +186,7 @@ function DocumentEditor({
       )}
 
       <input
+        ref={titleRef}
         value={title}
         disabled={!canEdit}
         maxLength={200}
