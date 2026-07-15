@@ -39,14 +39,19 @@ export function AuthShell({
             <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70" />
           </div>
 
-          {/* Floating "document" cards */}
-          <div
-            className="auth-float absolute right-20 top-24 h-16 w-28 rounded-lg border border-white/10 bg-white/[0.04]"
+          {/* Floating document files */}
+          <FloatingDoc className="right-16 top-20 w-32" lines={4} icon />
+          <FloatingDoc
+            className="left-14 bottom-28 w-24"
+            lines={2}
+            delay="1.8s"
           />
-          <div
-            className="auth-float absolute left-16 bottom-32 h-12 w-24 rounded-lg border border-white/10 bg-white/[0.04]"
-            style={{ animationDelay: "1.8s" }}
+          <FloatingDoc
+            className="right-28 bottom-44 w-20"
+            lines={2}
+            delay="3.2s"
           />
+          <FloatingDoc className="left-24 top-28 w-16" lines={1} delay="0.9s" />
         </div>
 
         <div className="relative flex items-center gap-2.5">
@@ -93,6 +98,40 @@ export function AuthShell({
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+/** A small translucent document mockup that floats in the dark auth panel. */
+function FloatingDoc({
+  className = "",
+  lines = 3,
+  icon = false,
+  delay = "0s",
+}: {
+  className?: string;
+  lines?: number;
+  icon?: boolean;
+  delay?: string;
+}) {
+  return (
+    <div
+      className={`auth-float absolute rounded-lg border border-white/10 bg-white/[0.06] p-2.5 shadow-lg shadow-black/20 backdrop-blur-sm ${className}`}
+      style={{ animationDelay: delay }}
+    >
+      <div className="mb-2 flex items-center gap-1.5">
+        {icon && <FileText size={11} className="text-white/50" />}
+        <div className="h-1.5 flex-1 rounded-full bg-white/30" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        {Array.from({ length: lines }).map((_, i) => (
+          <div
+            key={i}
+            className="h-1 rounded-full bg-white/15"
+            style={{ width: `${90 - i * 12}%` }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
