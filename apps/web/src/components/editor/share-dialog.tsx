@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { Search, UserPlus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
@@ -67,26 +68,30 @@ export function ShareDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Share document</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Share document</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-neutral-400 hover:text-neutral-700"
+            className="rounded-lg p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
         <div className="mt-4 flex gap-2">
           <div className="relative flex-1">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+            />
             <input
               type="text"
               placeholder="Search people by name or email"
@@ -95,7 +100,7 @@ export function ShareDialog({
                 setQuery(e.target.value);
                 setError(null);
               }}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+              className="w-full rounded-lg border border-neutral-300 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             />
 
             {showDropdown && (
@@ -119,7 +124,7 @@ export function ShareDialog({
                         )}
                         <span className="text-neutral-500">{u.email}</span>
                       </span>
-                      <span className="text-xs text-neutral-400">Add</span>
+                      <UserPlus size={15} className="text-indigo-500" />
                     </button>
                   ))}
                 {noMatches && (
@@ -134,7 +139,7 @@ export function ShareDialog({
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as ShareRole)}
-            className="rounded-md border border-neutral-300 px-2 py-2 text-sm"
+            className="rounded-lg border border-neutral-300 px-2 py-2 text-sm outline-none focus:border-indigo-500"
           >
             <option value="editor">Editor</option>
             <option value="viewer">Viewer</option>

@@ -21,8 +21,8 @@ export default function AppLayout({
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-neutral-500">
-        Loading…
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-indigo-600" />
       </div>
     );
   }

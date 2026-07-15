@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth-context";
+import { AuthShell, Field, SubmitButton } from "@/components/ui/auth-shell";
 
 /** Email/password login form. Signup is passwordless (see /signup). */
 export function LoginForm() {
@@ -24,9 +25,7 @@ export function LoginForm() {
       router.push("/");
     } catch (err) {
       setError(
-        err instanceof Error
-          ? humanizeAuthError(err.message)
-          : "Something went wrong.",
+        err instanceof Error ? humanizeAuthError(err.message) : "Something went wrong.",
       );
     } finally {
       setBusy(false);
@@ -34,58 +33,57 @@ export function LoginForm() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Coauthor</h1>
-        <p className="mt-1 text-sm text-neutral-500">Sign in to your account</p>
-      </div>
-
-      <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Email
+    <AuthShell title="Welcome back" subtitle="Sign in to your account">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <Field label="Email">
           <input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+            className="auth-input"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Password
+        </Field>
+        <Field label="Password">
           <input
             type="password"
             required
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+            className="auth-input"
           />
-        </label>
+        </Field>
 
         {error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-1 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50"
-        >
-          {busy ? "Please wait…" : "Log in"}
-        </button>
+        <SubmitButton busy={busy}>Log in</SubmitButton>
       </form>
 
-      <p className="text-center text-sm text-neutral-500">
+      <p className="mt-6 text-center text-sm text-neutral-500">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-medium text-neutral-900 underline">
+        <Link href="/signup" className="font-medium text-indigo-600 hover:underline">
           Sign up
         </Link>
       </p>
-    </div>
+
+      <div className="mt-5 rounded-lg border border-dashed border-neutral-200 bg-neutral-50 px-4 py-3 text-xs text-neutral-600">
+        <p className="mb-1 font-semibold text-neutral-700">Demo accounts</p>
+        <p>
+          <span className="font-mono">alice@test.ajaia.dev</span> /{" "}
+          <span className="font-mono">password123</span>
+        </p>
+        <p>
+          <span className="font-mono">bob@test.ajaia.dev</span> /{" "}
+          <span className="font-mono">password123</span>
+        </p>
+      </div>
+    </AuthShell>
   );
 }
 

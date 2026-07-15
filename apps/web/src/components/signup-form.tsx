@@ -1,10 +1,12 @@
 "use client";
 
+import { MailCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { AuthShell, Field, SubmitButton } from "@/components/ui/auth-shell";
 
 /**
  * Signup: collect name + email. The backend creates the account with a
@@ -29,7 +31,6 @@ export function SignupForm() {
     setBusy(true);
     try {
       await api.register(name.trim(), email.trim());
-      // Trigger Firebase's password-reset email so the user sets a password.
       await sendPasswordReset(email.trim());
       setSent(true);
     } catch (err) {
@@ -47,75 +48,70 @@ export function SignupForm() {
 
   if (sent) {
     return (
-      <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-4 p-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
-        <p className="text-sm text-neutral-600">
-          Your account was created. We sent a password-setup email to{" "}
-          <span className="font-medium">{email}</span>. Open it to set your
-          password, then log in.
-        </p>
-        <Link href="/login" className="text-sm text-neutral-900 underline">
-          Go to login
-        </Link>
-      </div>
+      <AuthShell title="Check your email" subtitle="Almost there">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-600">
+            <MailCheck size={22} />
+          </span>
+          <p className="text-sm text-neutral-600">
+            Your account was created. We sent a password-setup email to{" "}
+            <span className="font-medium text-neutral-900">{email}</span>. Open
+            it to set your password, then log in.
+          </p>
+          <Link
+            href="/login"
+            className="mt-1 text-sm font-medium text-indigo-600 hover:underline"
+          >
+            Go to login
+          </Link>
+        </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Coauthor</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Create your account — we&apos;ll email you a link to set your password
-        </p>
-      </div>
-
-      <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Name
+    <AuthShell
+      title="Create your account"
+      subtitle="We'll email you a link to set your password"
+    >
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <Field label="Name">
           <input
             type="text"
             required
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+            className="auth-input"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Email
+        </Field>
+        <Field label="Email">
           <input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-neutral-900"
+            className="auth-input"
           />
-        </label>
+        </Field>
 
         {error && (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-1 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50"
-        >
-          {busy ? "Creating account…" : "Create account"}
-        </button>
+        <SubmitButton busy={busy}>Create account</SubmitButton>
       </form>
 
-      <p className="text-center text-sm text-neutral-500">
+      <p className="mt-6 text-center text-sm text-neutral-500">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-neutral-900 underline">
+        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
           Log in
         </Link>
       </p>
-    </div>
+    </AuthShell>
   );
 }
 

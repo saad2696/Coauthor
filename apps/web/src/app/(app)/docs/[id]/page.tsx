@@ -2,6 +2,7 @@
 
 import type { TiptapDoc } from "@coauthor/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Eye, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -151,62 +152,74 @@ function DocumentEditor({
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-8">
-      <div className="flex items-center justify-between text-sm">
-        <Link href="/" className="text-neutral-500 hover:text-neutral-900">
-          ← All documents
-        </Link>
-        <div className="flex items-center gap-3">
-          {isViewer && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-              View only
-            </span>
-          )}
-          <SaveIndicator
-            state={saveState}
-            canEdit={canEdit}
-            onRetry={() => {
-              content.retry();
-              titleSave.retry();
-            }}
-          />
-          {isOwner && (
-            <button
-              onClick={() => setShareOpen(true)}
-              className="rounded-md bg-neutral-900 px-3 py-1 text-sm font-medium text-white hover:bg-neutral-700"
-            >
-              Share
-            </button>
-          )}
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 border-b border-neutral-200/80 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 transition hover:text-neutral-900"
+          >
+            <ArrowLeft size={16} />
+            All documents
+          </Link>
+          <div className="flex items-center gap-3">
+            {isViewer && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                <Eye size={12} /> View only
+              </span>
+            )}
+            <SaveIndicator
+              state={saveState}
+              canEdit={canEdit}
+              onRetry={() => {
+                content.retry();
+                titleSave.retry();
+              }}
+            />
+            {isOwner && (
+              <button
+                onClick={() => setShareOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-500"
+              >
+                <Share2 size={15} /> Share
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
       {shareOpen && (
         <ShareDialog docId={docId} onClose={() => setShareOpen(false)} />
       )}
 
-      <input
-        ref={titleRef}
-        value={title}
-        disabled={!canEdit}
-        maxLength={200}
-        onChange={(e) => onTitleChange(e.target.value)}
-        onBlur={() => titleSave.flush()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            e.currentTarget.blur();
-          }
-        }}
-        className="w-full border-none bg-transparent text-3xl font-semibold tracking-tight outline-none disabled:text-neutral-800"
-        placeholder="Untitled document"
-      />
+      <main className="mx-auto max-w-3xl px-6 py-8">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
+          <input
+            ref={titleRef}
+            value={title}
+            disabled={!canEdit}
+            maxLength={200}
+            onChange={(e) => onTitleChange(e.target.value)}
+            onBlur={() => titleSave.flush()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.currentTarget.blur();
+              }
+            }}
+            className="w-full border-none bg-transparent text-4xl font-bold tracking-tight text-neutral-900 outline-none placeholder:text-neutral-300 disabled:text-neutral-800"
+            placeholder="Untitled document"
+          />
 
-      <TiptapEditor
-        initialContent={initialContent}
-        editable={canEdit}
-        onChange={canEdit ? content.schedule : undefined}
-      />
+          <div className="mt-6">
+            <TiptapEditor
+              initialContent={initialContent}
+              editable={canEdit}
+              onChange={canEdit ? content.schedule : undefined}
+            />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
